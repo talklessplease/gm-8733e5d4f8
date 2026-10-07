@@ -1,0 +1,5 @@
+Gusmaster 3000 (a personal hobby project) bundles:
+- Stockfish (GPL v3), compiled to JavaScript by Niklas Fiekas: https://github.com/niklasf/stockfish.js
+- chess.js (BSD 2-Clause): https://github.com/jhlywa/chess.js
+- Lichess puzzle database (CC0): https://database.lichess.org/#puzzles
+- Chess piece images by Colin M.L. Burnett (GPL v2+), via Lichess: https://github.com/lichess-org/lila

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gusmaster"><meta name="theme-color" content="#0e0c18">
+<link rel="apple-touch-icon" href="icon-180.png"><link rel="manifest" href="manifest.webmanifest">
+<title>Gusmaster 3000</title>
+<link rel="stylesheet" href="pieces.css">
+<link rel="stylesheet" href="cats.css">
+<link rel="stylesheet" href="game.css">
+<style>:root { color-scheme: dark; } html { background: #0e0c18; }
+  body { padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px); }</style>
+</head><body>
+<!-- ============ Home ============ -->
+<section id="home">
+  <header class="homehead">
+    <h1 class="logo">GUSMASTER <span>3000</span></h1>
+    <div class="stats"></div>
+  </header>
+  <nav class="tabs">
+    <button data-tab="play">Play</button><button data-tab="academy">Academy</button>
+    <button data-tab="puzzles">Puzzles</button><button data-tab="homework">Homework</button>
+  </nav>
+
+  <div class="tabpane" id="tab-play">
+    <div class="tag">Chess with cats. The cats are not nice about it.</div>
+    <div class="opps"></div>
+    <div class="opts">
+      <span>Play as <span class="seg" id="colorSeg">
+        <button data-v="w">White</button><button data-v="b">Black</button><button data-v="r">Random</button></span></span>
+      <label><input type="checkbox" id="optHints"> Show legal moves</label>
+      <label>Board <select id="optTheme">
+        <option value="walnut">Walnut</option><option value="velvet">Blue velvet</option><option value="mint">Mint</option>
+        <option value="wizard">Wizard purple</option><option value="bowie">House of Bowie</option>
+        <option value="space">Deep space</option><option value="lcd">8-bit handheld</option></select></label>
+      <button id="bPieces" class="piecesbtn">♞ Pieces: <span id="piecesName">Classic</span></button>
+      <label><input type="checkbox" id="optSound"> Sound</label>
+      <label><input type="checkbox" id="optVoice"> Cats talk out loud</label>
+    </div>
+    <div class="tip">💬 Stuck mid-game? Click the cat, or hit <b>Ask</b>. Dumb questions welcome. Judged, but welcome.</div>
+    <div id="resume"></div>
+  </div>
+
+  <div class="tabpane hidden" id="tab-academy">
+    <div class="tag">Professor Gus teaches. Short lessons, then drills. Earn up to three stars each.</div>
+    <div class="unitlist"></div>
+  </div>
+
+  <div class="tabpane hidden" id="tab-puzzles">
+    <div class="tag">A few puzzles a day is the fastest way to get better. Bowie is watching.</div>
+    <div class="dailycard card2"></div>
+    <div class="pstats"></div>
+  </div>
+
+  <div class="tabpane hidden" id="tab-homework">
+    <div class="tag">Your own mistakes, served back to you until you get them right.</div>
+    <div class="hwcard card2"></div>
+  </div>
+</section>
+
+<!-- Piece-set gallery -->
+<div id="gallery" class="overlay hidden"><div class="card gallery">
+  <h2>Choose your pieces</h2>
+  <div class="sets"></div>
+  <div class="row"><button id="bGalleryClose">Done</button></div>
+</div></div>
+
+<!-- ============ Play ============ -->
+<section id="game" class="playfield hidden">
+  <aside class="stage"><div class="bubble"></div><div class="catbox"></div><div class="plate"></div></aside>
+  <main class="boardwrap">
+    <div class="captured capTop"></div>
+    <div class="board"></div>
+    <div class="captured capBot"></div>
+  </main>
+  <aside class="panel">
+    <div class="status">Loading...</div>
+    <h2>Moves</h2>
+    <div class="moves"></div>
+    <div class="btns">
+      <button id="bUndo">Take back</button><button id="bFlip">Flip board</button>
+      <button id="bResign">Resign</button><button id="bLobby">Home</button>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="gHints"> Show legal moves</label>
+      <label><input type="checkbox" id="gSound"> Sound</label>
+    </div>
+  </aside>
+  <div id="result" class="overlay hidden"><div class="card">
+    <h2 id="resTitle"></h2><p id="resSub"></p>
+    <div class="row"><button class="primary" id="bReview">Review with Gus</button><button id="bRematch">Rematch</button><button id="bResLobby">Home</button></div>
+  </div></div>
+</section>
+
+<!-- ============ Trainer (lessons, puzzles, homework, bosses) ============ -->
+<section id="trainer" class="playfield hidden">
+  <aside class="stage"><div class="bubble"></div><div class="catbox"></div><div class="plate"></div></aside>
+  <main class="boardwrap">
+    <div class="captured"></div>
+    <div class="board"></div>
+    <div class="captured"></div>
+  </main>
+  <aside class="panel">
+    <div><div class="t-title"></div><div class="t-sub"></div></div>
+    <div class="dots"></div>
+    <div class="chalk"></div>
+    <div class="btns">
+      <button id="tHint" class="hidden">Hint</button><button id="tAnswer" class="hidden">Show answer</button>
+    </div>
+    <div class="btns">
+      <button id="tPrev" class="hidden">Back</button><button id="tNext" class="primary hidden">Next</button>
+    </div>
+    <button id="tBack" class="ghostbtn">Home</button>
+  </aside>
+  <div id="tresult" class="overlay hidden"><div class="card">
+    <h2></h2><div class="stars"></div><p></p><div class="row"></div>
+  </div></div>
+</section>
+
+<script src="vendor/chess.min.js"></script>
+<script src="phone-config.js"></script>
+<script src="phone.js"></script>
+<script src="cats.js"></script>
+<script src="lines.js"></script>
+<script src="engine.js"></script>
+<script src="piecesets.js"></script>
+<script src="core.js"></script>
+<script src="board.js"></script>
+<script src="academy.js"></script>
+<script src="coach.js"></script>
+<script src="game.js"></script>
+<script src="trainer.js"></script>
+<script src="home.js"></script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();</script>
+</body></html>

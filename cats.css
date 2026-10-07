@@ -1,0 +1,152 @@
+/* Gusmaster 3000 -- cat moods. The root <svg class="cat st-*"> picks the mood. */
+.cat { width: 100%; height: auto; overflow: visible; display: block; }
+.cat * { transform-box: view-box; }
+.cat .head { transform-origin: 160px 190px; transform: scale(var(--hs, 1)); transition: transform .5s ease; }
+.cat .body { transform-origin: 160px 300px; animation: breathe 3.6s ease-in-out infinite; }
+.cat .tail { transform-origin: 250px 285px; animation: tail 5s ease-in-out infinite; }
+.cat .ear { transition: transform .35s ease; }
+.cat .ear-l { transform-origin: 120px 100px; } .cat .ear-r { transform-origin: 200px 100px; }
+.cat .arm { transition: transform .3s ease; }
+.cat .pupil { transition: transform .4s ease; }
+.cat .lid { transform: translateY(0); transition: transform .35s ease; }
+.cat .lid-low { transform: translateY(0); transition: transform .35s ease; }
+.cat .eye-shut, .cat .eye-happy, .cat .laser-glow, .cat .mouth-open, .cat .mouth-chew, .cat .brows,
+.cat .lasers, .cat .zzz, .cat .sparkles, .cat .impact, .cat .churu, .cat .haha, .cat .mouth-flat, .cat .arms-crossed { opacity: 0; transition: opacity .25s; }
+.cat .orb circle:first-of-type { animation: orb 2.8s ease-in-out infinite; }
+
+@keyframes breathe { 50% { transform: scale(1.025, 1.035); } }
+@keyframes tail { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
+@keyframes orb { 50% { opacity: .55; } }
+
+/* Blink (JS adds .blink briefly). */
+.cat.blink .eye-open { animation: blink .22s ease; }
+.cat .eye-open { transform-origin: 160px 128px; }
+@keyframes blink { 50% { transform: scaleY(.08); } }
+
+/* think: eyes up and to the side, head tilt. */
+.cat.st-think .pupil { transform: translate(-5px, -4px); }
+.cat.st-think .head { transform: scale(var(--hs, 1)) rotate(-5deg); }
+
+/* judge: half lids, side-eye, brows. The "really?" look after a mistake. */
+.cat.st-judge .lid { transform: translateY(14px); }
+.cat.st-judge .lid-low { transform: translateY(-4px); }
+.cat.st-judge .pupil { transform: translateX(6px); }
+.cat.st-judge .head { transform: scale(var(--hs, 1)) rotate(6deg); }
+.cat.st-judge .brows { opacity: .7; }
+
+/* slap: the big one. Paw rises then smashes the table. */
+.cat.st-slap .arm { animation: slap .75s cubic-bezier(.3, .0, .3, 1) both; }
+.cat.st-slap .impact { animation: impact .75s ease both; }
+.cat.st-slap .brows { opacity: 1; }
+.cat.st-slap .lid { transform: translateY(10px); }
+.cat.st-slap .mouth-w { opacity: 0; } .cat.st-slap .mouth-open { opacity: 1; }
+.cat.st-slap .ear-l { transform: rotate(-24deg); } .cat.st-slap .ear-r { transform: rotate(24deg); }
+@keyframes slap { 0% { transform: rotate(0); } 45% { transform: rotate(-150deg) translateY(-6px); }
+                  70% { transform: rotate(6deg); } 80% { transform: rotate(-4deg); } 100% { transform: rotate(0); } }
+@keyframes impact { 0%, 66% { opacity: 0; transform: scale(.6); } 72% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0; } }
+
+/* slowblink: cat for "nice move". */
+.cat.st-slowblink .lid { animation: slowblink 2.2s ease both; }
+.cat.st-slowblink .lid-low { animation: slowblinklow 2.2s ease both; }
+@keyframes slowblink { 30%, 60% { transform: translateY(32px); } }
+@keyframes slowblinklow { 30%, 60% { transform: translateY(-16px); } }
+
+/* happy / smug: closed-eye smile. */
+.cat.st-happy .eye-open { opacity: 0; } .cat.st-happy .eye-happy { opacity: 1; }
+.cat.st-happy .head { transform: scale(var(--hs, 1)) rotate(-4deg); }
+
+/* sleep: eyes shut, head droops, Zzz floats. */
+.cat.st-sleep .eye-open { opacity: 0; } .cat.st-sleep .eye-shut { opacity: 1; }
+.cat.st-sleep .head { transform: scale(var(--hs, 1)) translateY(10px) rotate(8deg); }
+.cat.st-sleep .body { animation-duration: 5.5s; }
+.cat.st-sleep .zzz { opacity: 1; }
+.cat.st-sleep .z { animation: zfloat 3s ease-in-out infinite; }
+.cat.st-sleep .z2 { animation-delay: .6s; } .cat.st-sleep .z3 { animation-delay: 1.2s; }
+@keyframes zfloat { 0% { opacity: 0; transform: translateY(10px); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
+
+/* yawn: stretching into a nap. */
+.cat.st-yawn .mouth-w { opacity: 0; } .cat.st-yawn .mouth-open { opacity: 1; }
+.cat.st-yawn .eye-open { opacity: 0; } .cat.st-yawn .eye-shut { opacity: 1; }
+.cat.st-yawn .head { transform: scale(var(--hs, 1)) rotate(-8deg) translateY(-4px); }
+
+/* eat: the churu comes up to the mouth, chew chew. */
+.cat.st-eat .churu { opacity: 1; }
+.cat.st-eat .arm { transform: rotate(-138deg); }
+.cat.st-eat .mouth-w { opacity: 0; } .cat.st-eat .mouth-chew { opacity: 1; }
+.cat.st-eat .eye-open { opacity: 0; } .cat.st-eat .eye-happy { opacity: 1; }
+.cat.st-eat .mouth-chew { animation: chew .35s ease-in-out infinite; transform-origin: 160px 170px; }
+@keyframes chew { 50% { transform: scaleY(1.6) translateY(2px); } }
+
+/* preen: Bowie admires himself. */
+.cat.st-preen .sparkles { opacity: 1; }
+.cat.st-preen .sparkles path { animation: twinkle 1.2s ease-in-out infinite; transform-origin: 260px 190px; }
+.cat.st-preen .head { transform: scale(var(--hs, 1)) rotate(9deg); }
+.cat.st-preen .pupil { transform: translate(7px, 3px); }
+.cat.st-preen .lid { transform: translateY(8px); }
+@keyframes twinkle { 50% { opacity: .2; } }
+
+/* check: smug, ears up. */
+.cat.st-check .lid { transform: translateY(9px); }
+.cat.st-check .pupil { transform: translate(-3px, 4px); }
+.cat.st-check .head { transform: scale(var(--hs, 1)) rotate(-3deg); }
+
+/* sad: you beat them. Ears flat, big eyes. */
+.cat.st-sad .ear-l { transform: rotate(-38deg) translateY(8px); } .cat.st-sad .ear-r { transform: rotate(38deg) translateY(8px); }
+.cat.st-sad .pupil { transform: scale(1.4); transform-origin: center; }
+.cat.st-sad .head { transform: scale(var(--hs, 1)) translateY(8px); }
+.cat.st-sad .lid-low { transform: translateY(-3px); }
+
+/* laser: the kaiju finish when the cat wins. */
+.cat.st-laser .laser-glow { opacity: 1; }
+.cat.st-laser .lasers { opacity: 1; animation: laser .18s linear infinite; }
+.cat.st-laser .brows { opacity: 1; }
+@keyframes laser { 50% { opacity: .75; } }
+
+/* laugh: eyes squeezed shut, mouth wide, the whole cat shakes, HA HA HA. */
+.cat.st-laugh .eye-open { opacity: 0; } .cat.st-laugh .eye-happy { opacity: 1; }
+.cat.st-laugh .mouth-w { opacity: 0; } .cat.st-laugh .mouth-open { opacity: 1; }
+.cat.st-laugh .head { animation: guffaw .26s ease-in-out infinite; }
+.cat.st-laugh .body { animation: belly .26s ease-in-out infinite; }
+.cat.st-laugh .arm { transform: rotate(-24deg); }
+.cat.st-laugh .haha { opacity: 1; }
+.cat.st-laugh .ha { animation: hapop .78s ease-out infinite; }
+.cat.st-laugh .ha2 { animation-delay: .26s; } .cat.st-laugh .ha3 { animation-delay: .52s; }
+@keyframes guffaw { 0%, 100% { transform: scale(var(--hs, 1)) rotate(-7deg) translateY(0); } 50% { transform: scale(var(--hs, 1)) rotate(-3deg) translateY(-7px); } }
+@keyframes belly { 50% { transform: scale(1.04, .97); } }
+@keyframes hapop { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+
+/* eyeroll: pupils roll up and away, lids heavy, flat mouth, head tips back. */
+.cat.st-eyeroll .pupil { animation: roll 1.1s ease-in-out both; }
+.cat.st-eyeroll .lid { transform: translateY(9px); }
+.cat.st-eyeroll .mouth-w { opacity: 0; } .cat.st-eyeroll .mouth-flat { opacity: 1; }
+.cat.st-eyeroll .head { transform: scale(var(--hs, 1)) rotate(-6deg) translateY(-3px); }
+@keyframes roll { 0% { transform: translate(0, 0); } 35% { transform: translate(-6px, -9px); } 65% { transform: translate(6px, -10px); } 100% { transform: translate(4px, -10px); } }
+
+/* arms: crossed arms, flat mouth, half lids, a slow head shake. "Are you serious?" */
+.cat.st-arms .arms-crossed { opacity: 1; }
+.cat.st-arms .leg-rest, .cat.st-arms .arm { opacity: 0; }
+.cat.st-arms .lid { transform: translateY(13px); }
+.cat.st-arms .lid-low { transform: translateY(-3px); }
+.cat.st-arms .mouth-w { opacity: 0; } .cat.st-arms .mouth-flat { opacity: 1; }
+.cat.st-arms .brows { opacity: .8; }
+.cat.st-arms .head { animation: headshake 1.6s ease-in-out .3s 2 both; }
+@keyframes headshake { 0%, 100% { transform: scale(var(--hs, 1)) rotate(0); } 25% { transform: scale(var(--hs, 1)) rotate(-6deg); } 75% { transform: scale(var(--hs, 1)) rotate(6deg); } }
+
+/* facepaw: the paw comes up over the face. Eyes shut. A long sigh. */
+.cat .facepaw-arm { opacity: 0; transform: translateY(60px) rotate(12deg); transition: transform .4s cubic-bezier(.3, 1.4, .5, 1), opacity .15s; }
+.cat.st-facepaw .facepaw-arm { opacity: 1; transform: none; }
+.cat.st-facepaw .arm { opacity: 0; }
+.cat.st-facepaw .eye-open { opacity: 0; } .cat.st-facepaw .eye-shut { opacity: 1; }
+.cat.st-facepaw .mouth-w { opacity: 0; } .cat.st-facepaw .mouth-flat { opacity: 1; }
+.cat.st-facepaw .head { transform: scale(var(--hs, 1)) rotate(7deg) translateY(6px); }
+.cat.st-facepaw .ear-l { transform: rotate(-16deg); } .cat.st-facepaw .ear-r { transform: rotate(16deg); }
+
+/* Dark Lord Bowie: chest-box lights blink, the saber hums. */
+.cat .chest-light { animation: chestblink 1.6s steps(2) infinite; }
+.cat .chest-light.l2 { animation-delay: .5s; } .cat .chest-light.l3 { animation-delay: 1.1s; }
+@keyframes chestblink { 50% { opacity: .25; } }
+.cat .saber-blade { animation: saberhum 1.1s ease-in-out infinite; }
+@keyframes saberhum { 50% { opacity: .25; } }
+/* R2 on C-3PO's table: the dome eye looks around. */
+.cat .r2eye { animation: r2look 4.5s ease-in-out infinite; }
+@keyframes r2look { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-5px); } 60% { transform: translateX(5px); } }
