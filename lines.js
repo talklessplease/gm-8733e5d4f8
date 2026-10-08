@@ -35,9 +35,14 @@
     dailyDone: ['All five! The streak lives.', 'Done for today. Gorgeous work.'],
     homework: ['Homework. From your own games. *crunch*', 'Remember these? I do.'],
     homeworkDone: ['Homework done. I am going to nap now.', 'All caught up. Treat time.'],
+    // The capture tantrum: furious, lasers one of your pieces, realizes, gives it back, purrs.
+    tantrum: ['HEY! That was MINE!', 'How DARE you.', 'Oh, it is ON.', 'You will pay for that.'],
+    oops:    ['...oops.', 'Wait. That is not allowed.', 'Okay. That was too much.', 'Hmm. That was not legal.'],
+    innocent: ['*purr* I did nothing wrong.', 'Mrrp? What laser? *slow blink*', 'There. Good as new. *purr*', '*purrs innocently*'],
   };
   const PERSONA = {
     kitten: {
+      tantrum: ['NOOO! That was my toy!'], oops: ['Oopsie!'], innocent: ['*tiny purr* Sorry! Still friends?'],
       greet: ['Hi! I am Kitten Gus! Is that a bishop? Can I eat it?', 'Let\'s play! I have been practicing! (I have not.)'],
       think: ['Ooh, a horse!', 'Which one moves diagonal again?', 'Eeny, meeny...'],
       win:   ['I WON?! Mom! MOM!', 'Laser eyes! Pew pew!'],
@@ -45,6 +50,7 @@
       blunder: ['Oopsie! Wait, that was you.', 'Even I saw that one!', 'Yay, free stuff!'],
     },
     lazy: {
+      tantrum: ['Ugh. Rude. *swat*'], oops: ['...Too much effort to stay mad.'], innocent: ['*purrs, falls half asleep*'],
       greet: ['Ugh. Fine. One game. Then nap.', 'You move first. I am conserving energy.'],
       think: ['*crunch crunch*', 'Hold on. Snack break.', 'Mm. Chicken flavor.', 'One more treat, then I move.'],
       snack: ['Wait, did I just... whatever. Snacks.', 'Was that bad? I was eating.'],
@@ -52,6 +58,7 @@
       lose:  ['Fine. I was full anyway.', 'You beat me because I was digesting.'],
     },
     wizard: {
+      tantrum: ['By the ancient whiskers, you will regret that!'], oops: ['The orb says that was illegal.'], innocent: ['*purrs mystically* It never happened.'],
       greet: ['Ahh. A challenger. The board remembers every mistake, you know.', 'Sit. The stars are aligned for chess.'],
       think: ['The orb reveals... hmm.', 'I consult the ancient whiskers.', 'Calculating eleventy moves ahead...'],
       blunder: ['By the ancient whiskers, NO!', 'The prophecy did not foresee THAT.', 'I felt a disturbance in the board.'],
@@ -60,6 +67,7 @@
       lose:  ['Impossible. The orb said...', 'Well played. I will update the prophecy.'],
     },
     bowie: {
+      tantrum: ['Not my pawn, darling! It was couture!', 'You did NOT just do that.'], oops: ['...My claws slipped, sweetie.'], innocent: ['*purrs fabulously* As you were.'],
       greet: ['Darling. You came. Try not to embarrass yourself in front of the crown.', 'Welcome to the House of Bowie.'],
       think: ['One moment. Fixing my ruff.', 'Hmm, which move flatters me most...', 'Thinking. Beautifully.'],
       preen: ['Have you seen my ears? Of course you have.', 'Gorgeous. Me, I mean.', 'Mirror, mirror...'],
@@ -88,6 +96,7 @@
     lose: ['Nooooooo... darling.'],
     preen: ['Have you seen my cape? Of course you have.', 'The dark side has better tailoring.'],
     capture: ['You underestimate the power of the fluff.', 'Mine now. As foreseen.'],
+    tantrum: ['You underestimate my temper, darling.'], oops: ['Even the dark side has rules. Apparently.'], innocent: ['*mechanical breathing* ...and purring.'],
   };
   // The rest of the Space Saga cast. Anything missing falls back to the cat underneath the costume.
   PERSONA.threepio = {      // Kitten Gus as C-3PO, with R2 on the table
@@ -98,6 +107,7 @@
     check: ['Check! Oh, I do hope that was allowed.'],
     win:   ['We won? R2, we WON!', 'Laser eyes! Oh, I hope that is not dangerous.'],
     lose:  ['We are doomed. Good game, though!', 'Shut me down. Humans playing chess. How perverse.'],
+    tantrum: ['How rude! R2, laser him!'], oops: ['Oh dear. That was against the rules, I believe.'], innocent: ['*whirrs and purrs* Nothing happened.'],
   };
   PERSONA.leia = {          // Lazy Gus as Princess Leia. The hair buns are cinnamon buns.
     greet: ['Help me, human. You are my only hope. Also, I am hungry.', 'Aren\'t you a little short for a grandmaster?'],
@@ -106,6 +116,7 @@
     blunder: ['Why, you stuck-up, scruffy-looking pawn pusher!', 'Into the garbage chute with that move.'],
     win:   ['Somebody had to save your skins. Nap time.'],
     lose:  ['Fine. I was full anyway.', 'You beat me because I was eating my hair.'],
+    tantrum: ['Hey! I was going to eat that!'], oops: ['...Fine. Put it back.'], innocent: ['*purrs, nibbles hair bun* What?'],
   };
   PERSONA.yoda = {          // Wizard Gus as Master Yoda
     greet: ['Play chess, we will. Lose, you will.', 'Hmm. Strong with the Force, you are not. Yet.'],
@@ -115,6 +126,7 @@
     best:  ['*slow Jedi blink*', 'Learning, the student is.'],
     win:   ['Judge me by my size, do you? Checkmate.', 'As foretold. Laser eyes, it is.'],
     lose:  ['Beaten, I am. Proud, I am. A nap, I need.', 'Impossible. Wait. Possible, it was.'],
+    tantrum: ['Angry, I am. Yes.'], oops: ['Hmm. To the dark side, anger leads.'], innocent: ['*purrs wisely* Happened, nothing did.'],
   };
   window.Lines = {
     DATA: { GUS, PERSONA },                    // for scripts/record-voices.mjs

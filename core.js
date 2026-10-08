@@ -41,6 +41,17 @@
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.05); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
     o.connect(f).connect(g).connect(c.destination); o.start(t); lfo.start(t); o.stop(t + 0.46); lfo.stop(t + 0.46);
   }
+  // A purr: a low rumble that pulses about 24 times a second.
+  function purr(dur = 2, vol = 0.3) {
+    if (!S.sound) return;
+    const c = ac(), t = c.currentTime, b = c.createBuffer(1, c.sampleRate * dur, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), am = c.createGain(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+    f.type = 'lowpass'; f.frequency.value = 380; am.gain.value = 0.5; lfo.frequency.value = 24; lg.gain.value = 0.5;
+    lfo.connect(lg).connect(am.gain);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.3); g.gain.setValueAtTime(vol, t + dur - 0.5); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.buffer = b; s.connect(f).connect(am).connect(g).connect(c.destination); s.start(t); lfo.start(t); lfo.stop(t + dur);
+  }
   // A laser-sword hum: two detuned low sawtooths swept through a filter, plus a crackle.
   function saber(vol = 0.09) {
     if (!S.sound) return;
@@ -64,7 +75,7 @@
     move: () => pack().move(),
     capture: t => pack().capture(t),
     promote: () => S.pieces === 'cats' ? meow(1.25, 0.1) : [523, 784, 1046].forEach((fr, i) => tone(fr, 0.12, S.pieces === 'retro' ? 'square' : 'triangle', 0.08, null, i * 0.08)),
-    meow,
+    meow, purr,
     slap: () => { noise(0.22, 0.7, 700); tone(70, 0.3, 'sine', 0.5, 40); },
     laser: () => { tone(1400, 0.9, 'sawtooth', 0.07, 180); tone(1450, 0.9, 'square', 0.04, 200); },
     check: () => { tone(880, 0.08, 'square', 0.06); tone(990, 0.1, 'square', 0.06, null, 0.09); },

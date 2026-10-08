@@ -96,9 +96,37 @@
     renderSide();
     if (g.kind === 'blunder' || g.kind === 'mistake')
       stage.offer(g.kind === 'blunder' ? 'Why?? 💬' : 'Why? 💬', () => { Coach.open(coach); Coach.ask('Why was my last move bad?'); }, 12000);
-    await react(g.kind);
+    if (mv.captured && g.kind !== 'blunder' && wantsTantrum(mv.captured)) await tantrum(gen);
+    else await react(g.kind);
     if (gen !== G.gen) return;
     await catMove(lines, gen);
+  }
+
+  // Take one of the cat's pieces and it may throw a tantrum: slaps the table, lasers one of your pieces off
+  // the board, squints, realizes, tosses the piece back, meows and purrs. Looks only: the position never
+  // changes. More likely for bigger captures, and never twice within three moves.
+  const TANTRUM = { p: 0.25, n: 0.5, b: 0.5, r: 0.65, q: 0.9 };
+  const wantsTantrum = t => (G.tantrumGen !== G.gen || chess().history().length - G.tantrumPly >= 6) && Math.random() < (TANTRUM[t] || 0);
+  async function tantrum(gen) {
+    G.tantrumGen = gen; G.tantrumPly = chess().history().length;
+    const ok = () => gen === G.gen;
+    const mine = board.squares().filter(sq => { const p = chess().get(sq); return p && p.color === G.human && p.type !== 'k'; });
+    const victim = mine[Math.floor(Math.random() * mine.length)];
+    stage.mood('slap'); setTimeout(() => { sfx.slap(); board.shake(); }, 480);
+    stage.say(line('tantrum'), 2200); await wait(1500); if (!ok()) return;
+    if (victim) {
+      stage.mood('laser'); aimLasers(board.squareEl(victim)); sfx.laser(); board.zap(victim);
+      await wait(1300); if (!ok()) return;
+    }
+    stage.mood('judge'); await wait(1300); if (!ok()) return;                 // the squint
+    stage.mood('sad'); stage.say(line('oops'), 1800); await wait(1500); if (!ok()) return;
+    if (victim) { stage.mood('toss'); setTimeout(() => board.toss(victim), 380); await wait(1100); if (!ok()) return; }
+    const cat = stage.svg();
+    sfx.meow(1.1); stage.mood('slowblink'); if (cat) cat.classList.add('purring'); setTimeout(() => sfx.purr(2.2), 450);
+    stage.say(line('innocent'), 2800); await wait(2600);
+    if (cat) cat.classList.remove('purring');
+    if (!ok()) return;
+    board.render(); stage.mood('think');
   }
 
   // How much each cat laughs at you instead of slapping the table.
@@ -255,6 +283,7 @@
       humanMove({ from: m.from, to: m.to, promotion: m.promotion }); return m.san;
     },
     ready: () => !G.busy && !G.over && chess().turn() === G.human,
+    tantrum: () => tantrum(G.gen),           // watch the capture tantrum on demand
   };
 
   // Ask Gus: the drawer reads this to build the facts. Questions pause the cat's napping.

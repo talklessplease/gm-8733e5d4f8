@@ -184,6 +184,18 @@
       const s = document.createElement('div'); s.className = 'scorch'; s.style.inset = '-15%'; el.appendChild(s);
       const pc = el.querySelector('.pc'); if (pc) setTimeout(() => pc.classList.add('toast'), 100);
     }
+    // The capture tantrum (game.js): zap a piece off the board, then toss it back. Looks only; the game
+    // position never changes, and a render() puts everything back exactly as it was.
+    zap(sq) {
+      this.scorch(sq);
+      const pc = this.squareEl(sq) && this.squareEl(sq).querySelector('.pc');
+      if (pc) setTimeout(() => pc.classList.add('zapped'), 650);
+    }
+    toss(sq) {
+      const el = this.squareEl(sq), pc = el && el.querySelector('.pc'); if (!pc) return;
+      el.querySelectorAll('.scorch').forEach(s => s.remove());
+      pc.classList.remove('toast', 'zapped'); void pc.offsetWidth; pc.classList.add('tossed');
+    }
     squareEl(sq) { return this.el.querySelector(`[data-sq="${sq}"]`); }
     kingSquare(color) {
       return this.squares().find(sq => { const p = this.chess.get(sq); return p && p.type === 'k' && p.color === color; });

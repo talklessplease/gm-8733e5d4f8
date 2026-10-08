@@ -150,3 +150,11 @@
 /* R2 on C-3PO's table: the dome eye looks around. */
 .cat .r2eye { animation: r2look 4.5s ease-in-out infinite; }
 @keyframes r2look { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-5px); } 60% { transform: translateX(5px); } }
+
+/* Capture tantrum (game.js): the paw scoops the piece off the table and flings it back; then a purr. */
+.cat.st-toss .arm { animation: toss .8s cubic-bezier(.3, 0, .3, 1) both; }
+.cat.st-toss .ear-l { transform: rotate(-10deg); } .cat.st-toss .ear-r { transform: rotate(10deg); }
+@keyframes toss { 0% { transform: rotate(0); } 35% { transform: rotate(22deg) translateY(6px); } 70% { transform: rotate(-135deg) translateY(-8px); } 100% { transform: rotate(-10deg); } }
+.cat.purring .body { animation: purrbuzz .09s linear infinite; }
+.cat.purring .head { animation: purrbuzz .09s linear infinite reverse; }
+@keyframes purrbuzz { 50% { transform: translate(.8px, .4px); } }

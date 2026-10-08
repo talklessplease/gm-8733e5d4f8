@@ -314,9 +314,18 @@ select { font: inherit; background: var(--panel2); color: var(--text); border: 1
   .t-title { font-size: 19px; }
 
   /* Ask Gus: a sheet under the board; the cat steps aside while it is open. */
-  .askdrawer { top: auto; left: 0; width: 100%; height: calc(100% - var(--sq) * 8 - 46px); border-left: 0; border-top: 2px solid #4a4178;
+  /* The board shrinks to about a third of the screen so the answer gets the rest (it was two lines tall). */
+  .askdrawer { top: auto; left: 0; width: 100%; height: calc(100% - var(--sq) * 8 - 52px - env(safe-area-inset-top, 0px));
+               border-left: 0; border-top: 2px solid #4a4178;
                border-radius: 18px 18px 0 0; transform: translateY(105%); padding-bottom: env(safe-area-inset-bottom, 0px); }
-  .playfield.asking { grid-template-columns: 1fr; padding-right: 8px; --sq: min(calc((100vw - 22px) / 8), calc((100vh - 250px) / 8)); }
+  .playfield.asking { grid-template-columns: 1fr; padding-right: 8px; --sq: min(calc((100vw - 22px) / 8), calc(36vh / 8)); }
+  .ask-head { padding: 8px 14px 6px; } .ask-title { font-size: 18px; }
+  .ask-msgs { padding: 10px 12px; }
+  .ask-chips { flex-wrap: nowrap; overflow-x: auto; padding: 6px 12px; scrollbar-width: none; }
+  .ask-chips button { flex: 0 0 auto; }
+  .ask-chips .chip-back { width: auto; }
+  .ask-form { padding: 6px 12px; } .ask-form textarea { padding: 8px 10px; }
+  .ask-foot { padding: 0 12px 8px; }
   .playfield.asking .stage { display: none; }
   .msg { font-size: 16px; }
   .ask-form textarea { font-size: 16px; }
@@ -333,3 +342,10 @@ select { font: inherit; background: var(--panel2); color: var(--text); border: 1
 .handoff { display: none; margin-left: auto; font-size: 13px; font-weight: 700; color: var(--gold); text-decoration: none;
            border: 1px solid #5b4ea0; border-radius: 8px; padding: 4px 10px; }
 body.online .handoff { display: inline-block; }
+
+/* Capture tantrum: a lasered piece flies off the board, then gets thrown back onto its square. */
+.pc.zapped { transform: translateY(-170%) scale(.1) rotate(220deg) !important; opacity: 0; transition: transform .45s ease-in, opacity .45s ease-in !important; }
+.pc.tossed { animation: tossin .8s cubic-bezier(.25, .7, .35, 1) both; }
+@keyframes tossin { 0% { transform: translateY(-340%) rotate(-540deg) scale(1.4); opacity: .3; }
+                    65% { transform: translateY(8%) rotate(10deg) scale(.94); opacity: 1; }
+                    82% { transform: translateY(-14%) rotate(-4deg) scale(1.03); } 100% { transform: none; } }
