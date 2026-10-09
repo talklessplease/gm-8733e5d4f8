@@ -140,7 +140,7 @@
     const order = ['classic', 'cats', 'space', 'retro'];
     $('#gallery .sets').innerHTML = order.map(id => {
       const set = PieceSets.SETS[id];
-      const img = (t, side) => id === 'classic' ? `<div class="pc ${side}${t}" style="position:relative"></div>`
+      const img = (t, side) => id === 'classic' ? `<div class="pc classic ${side}${t}" style="position:relative"></div>`
                                                 : `<div class="pc" style="position:relative;background-image:url('${PieceSets.dataUrl(id, t, side)}')"></div>`;
       const row = side => 'kqrbnp'.split('').map((t, i) => `<div class="gsq ${(i + (side === 'b' ? 1 : 0)) % 2 ? 'd' : 'l'}">${img(t, side)}</div>`).join('');
       return `<div class="setcard ${S.pieces === id ? 'on' : ''}" data-id="${id}">

@@ -252,7 +252,8 @@
     if (!cache[key]) cache[key] = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgWrap(SETS[set].draw(t, side), (v * 1.9 + (t.charCodeAt(0) % 5) * 0.37).toFixed(2)));
     return cache[key];
   }
-  // Install CSS for the chosen set: body[data-pieces=set] .pc.wp(.v1/.v2) { background-image }
+  // Install CSS for the chosen set: body[data-pieces=set] .pc.wp(.v1/.v2) { background-image }.
+  // A .pc.classic keeps the classic look whatever set is on (the gallery's Classic preview).
   let styleEl = null;
   function apply(set) {
     if (!SETS[set]) set = 'classic';
@@ -261,7 +262,7 @@
     if (set === 'classic') { styleEl.textContent = ''; return; }
     let css = '';
     for (const side of ['w', 'b']) for (const t of 'pnbrqk') for (let v = 0; v < 3; v++)
-      css += `body[data-pieces="${set}"] .pc.${side}${t}${v ? '.v' + v : ''} { background-image: url("${dataUrl(set, t, side, v)}"); }\n`;
+      css += `body[data-pieces="${set}"] .pc.${side}${t}${v ? '.v' + v : ''}:not(.classic) { background-image: url("${dataUrl(set, t, side, v)}"); }\n`;
     styleEl.textContent = css;
   }
 
