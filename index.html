@@ -13,6 +13,8 @@
 <style>:root { color-scheme: dark; } html { background: #0e0c18; }
   body { padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px); }</style>
 </head><body>
+<div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+
 <!-- ============ Home ============ -->
 <section id="home">
   <header class="homehead">
@@ -27,17 +29,18 @@
   <div class="tabpane" id="tab-play">
     <div class="tag">Chess with cats. The cats are not nice about it.</div>
     <div class="opps"></div>
-    <div class="opts">
-      <span>Play as <span class="seg" id="colorSeg">
-        <button data-v="w">White</button><button data-v="b">Black</button><button data-v="r">Random</button></span></span>
-      <label><input type="checkbox" id="optHints"> Show legal moves</label>
-      <label>Board <select id="optTheme">
-        <option value="walnut">Walnut</option><option value="velvet">Blue velvet</option><option value="mint">Mint</option>
-        <option value="wizard">Wizard purple</option><option value="bowie">House of Bowie</option>
-        <option value="space">Deep space</option><option value="lcd">8-bit handheld</option></select></label>
-      <button id="bPieces" class="piecesbtn">♞ Pieces: <span id="piecesName">Classic</span></button>
-      <label><input type="checkbox" id="optSound"> Sound</label>
-      <label><input type="checkbox" id="optVoice"> Cats talk out loud</label>
+    <div class="setup">
+      <div class="setrow"><span class="lbl">Play as</span><span class="seg" id="colorSeg">
+        <button data-v="w">White</button><button data-v="b">Black</button><button data-v="r">Random</button></span></div>
+      <div class="setrow"><span class="lbl">Pieces</span><button id="bPieces" class="piecesbtn"><span class="pmini"></span><span id="piecesName">Classic</span><em>Change</em></button></div>
+      <div class="setrow"><span class="lbl">Board</span><select id="optTheme"></select></div>
+      <div class="setrow"><span class="lbl">View</span><span class="seg" id="viewSeg"><button data-v="flat">2D board</button><button data-v="3d">3D board</button></span></div>
+      <div class="switches">
+        <label class="switch"><input type="checkbox" id="optHints"><i></i>Show legal moves</label>
+        <label class="switch"><input type="checkbox" id="optEval"><i></i>Who's-winning bar</label>
+        <label class="switch"><input type="checkbox" id="optSound"><i></i>Sound</label>
+        <label class="switch"><input type="checkbox" id="optVoice"><i></i>Cats talk out loud</label>
+      </div>
     </div>
     <div class="tip">💬 Stuck mid-game? Click the cat, or hit <b>Ask</b>. Dumb questions welcome. Judged, but welcome.</div>
     <div id="resume"></div>
@@ -74,21 +77,25 @@
     <div class="captured capTop"></div>
     <div class="board"></div>
     <div class="captured capBot"></div>
+    <div class="evalbar hidden" title="Who is winning"><i></i></div>
   </main>
   <aside class="panel">
     <div class="status">Loading...</div>
+    <div class="evaltext hidden"></div>
     <h2>Moves</h2>
     <div class="moves"></div>
     <div class="btns">
-      <button id="bUndo">Take back</button><button id="bFlip">Flip board</button>
-      <button id="bResign">Resign</button><button id="bLobby">Home</button>
+      <button id="bUndo">↶ Take back</button><button id="bFlip">⇅ Flip</button>
+      <button id="bView">3D board</button><button id="bResign">⚑ Resign</button>
     </div>
     <div class="toggles">
-      <label><input type="checkbox" id="gHints"> Show legal moves</label>
-      <label><input type="checkbox" id="gSound"> Sound</label>
+      <label class="switch"><input type="checkbox" id="gHints"><i></i>Show legal moves</label>
+      <label class="switch"><input type="checkbox" id="gEval"><i></i>Who's-winning bar</label>
+      <label class="switch"><input type="checkbox" id="gSound"><i></i>Sound</label>
     </div>
+    <button id="bLobby" class="ghostbtn">⌂ Home</button>
   </aside>
-  <div id="result" class="overlay hidden"><div class="card">
+  <div id="result" class="overlay hidden"><div class="confetti"></div><div class="card">
     <h2 id="resTitle"></h2><p id="resSub"></p>
     <div class="row"><button class="primary" id="bReview">Review with Gus</button><button id="bRematch">Rematch</button><button id="bResLobby">Home</button></div>
   </div></div>
@@ -114,7 +121,7 @@
     </div>
     <button id="tBack" class="ghostbtn">Home</button>
   </aside>
-  <div id="tresult" class="overlay hidden"><div class="card">
+  <div id="tresult" class="overlay hidden"><div class="confetti"></div><div class="card">
     <h2></h2><div class="stars"></div><p></p><div class="row"></div>
   </div></div>
 </section>
@@ -126,6 +133,8 @@
 <script src="lines.js"></script>
 <script src="engine.js"></script>
 <script src="piecesets.js"></script>
+<script src="set-staunton.js"></script>
+<script src="set-spooky.js"></script>
 <script src="core.js"></script>
 <script src="board.js"></script>
 <script src="academy.js"></script>

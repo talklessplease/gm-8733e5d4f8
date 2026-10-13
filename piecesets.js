@@ -246,6 +246,14 @@
     retro: { name: 'Chessmaster 1990', blurb: 'Pure 8-bit nostalgia. Blip blip.', board: 'lcd', draw: (t, side) => pixel(t, side) },
   };
 
+  // Board colour themes (the Play tab's Board menu). Set files add their own with registerBoard().
+  const BOARDS = { walnut: 'Walnut', velvet: 'Blue velvet', mint: 'Green (chess.com style)', wizard: 'Wizard purple', bowie: 'House of Bowie',
+                   space: 'Deep space', lcd: '8-bit handheld' };
+  // Extra sets live in their own files (set-*.js) and plug in here. def: { name, blurb, board, draw(t, side),
+  // still?: true (no animation, so one image per piece), pack?: { move(A), capture(t, A), promote?(A) } } where A = Core's sound kit { tone, noise, meow, purr, saber }.
+  const register = (id, def) => { SETS[id] = def; };
+  const registerBoard = (id, label) => { BOARDS[id] = label; };
+
   const cache = {};
   function dataUrl(set, t, side, v = 0) {
     const key = `${set}-${t}-${side}-${v}`;
@@ -261,10 +269,11 @@
     if (!styleEl) { styleEl = document.createElement('style'); document.head.appendChild(styleEl); }
     if (set === 'classic') { styleEl.textContent = ''; return; }
     let css = '';
-    for (const side of ['w', 'b']) for (const t of 'pnbrqk') for (let v = 0; v < 3; v++)
+    const variants = SETS[set].still ? 1 : 3;   // sets with no animation need no delay variants (.pc.wp also matches .v1/.v2)
+    for (const side of ['w', 'b']) for (const t of 'pnbrqk') for (let v = 0; v < variants; v++)
       css += `body[data-pieces="${set}"] .pc.${side}${t}${v ? '.v' + v : ''}:not(.classic) { background-image: url("${dataUrl(set, t, side, v)}"); }\n`;
     styleEl.textContent = css;
   }
 
-  window.PieceSets = { SETS, apply, dataUrl, svg: (set, t, side) => svgWrap(SETS[set].draw(t, side), 0) };
+  window.PieceSets = { SETS, BOARDS, register, registerBoard, apply, dataUrl, svg: (set, t, side) => svgWrap(SETS[set].draw(t, side), 0) };
 })();

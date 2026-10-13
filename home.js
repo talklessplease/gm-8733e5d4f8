@@ -30,28 +30,43 @@
   async function renderStats() {
     const d = Progress.data, items = await Trainer.homeworkItems();
     const due = items.filter(i => i.due).length;
-    const streakAlive = d.streak.last === today() || d.streak.last === Core.addDays(today(), -1);
     $('.stats').innerHTML = `
       <span title="Puzzle rating">🧩 <b>${d.puzzleRating}</b></span>
-      <span title="Daily puzzle streak">🔥 <b>${streakAlive ? d.streak.count : 0}</b></span>
+      <span title="Daily puzzle streak">🔥 <b>${streakShown()}</b></span>
       <span title="Academy stars">⭐ <b>${Object.values(d.academy).reduce((a, u) => a + (u.stars || 0), 0)}</b></span>`;
     const hwTab = $('.tabs [data-tab="homework"]');
     hwTab.innerHTML = 'Homework' + (due ? ` <span class="badge">${due}</span>` : '');
+  }
+
+  // The streak still counts if finishing today's five would carry it on (cat naps cover missed days).
+  function streakShown() {
+    const s = Progress.data.streak;
+    if (!s.count) return 0;
+    return s.last === today() || Core.nextStreak(s, today()).count === s.count + 1 ? s.count : 0;
   }
 
   // ---------- Play ----------
   async function renderPlay() {
     let games = [];
     try { games = await (await fetch('/api/games')).json(); } catch {}
+    // Next challenge: the first cat Jim has not yet beaten three times (with more wins than losses).
+    const rec = p => { const g = games.filter(x => x.opponent === p), n = k => g.filter(x => x.outcome === k).length;
+                       return { g: g.length, w: n('win'), l: n('loss'), d: n('draw') }; };
+    const next = ORDER.find(p => { const r = rec(p); return !(r.w >= 3 && r.w > r.l); }) || 'bowie';
     $('.opps').innerHTML = ORDER.map(p => {
-      const g = games.filter(x => x.opponent === p), n = k => g.filter(x => x.outcome === k).length;
-      const rec = g.length ? `You ${n('win')} · ${PERSONAS[p].name.split(' ').pop()} ${n('loss')}${n('draw') ? ' · draws ' + n('draw') : ''}` : 'Not played yet';
-      return `<div class="opp" data-p="${p}">${Cats.svg(Cats.artFor(p))}<h3>${Cats.nameFor(p, PERSONAS[p].name)}</h3><div class="rating">rating ${PERSONAS[p].rating}</div>
-              <div class="blurb">${BLURB[p]}</div><div class="rec">${rec}</div></div>`;
+      const r = rec(p), short = Cats.nameFor(p, PERSONAS[p].name).split(' ').pop();
+      const score = r.g ? `<span class="w">You ${r.w}</span><span class="l">${short} ${r.l}</span>${r.d ? `<span>Draws ${r.d}</span>` : ''}` : '<span>Not played yet</span>';
+      return `<div class="opp ${p === next ? 'next' : ''}" data-p="${p}">${p === next ? '<div class="ribbon">Next challenge</div>' : ''}
+              <div class="oppart">${Cats.svg(Cats.artFor(p))}</div><h3>${Cats.nameFor(p, PERSONAS[p].name)}</h3><div class="rating">rating ${PERSONAS[p].rating}</div>
+              <div class="blurb">${BLURB[p]}</div><div class="rec">${score}</div></div>`;
     }).join('');
-    document.querySelectorAll('.opp').forEach(el => el.onclick = () => Play.start(el.dataset.p, S.color));
+    document.querySelectorAll('.opp').forEach(el => {
+      el.onclick = () => Play.start(el.dataset.p, S.color);
+      const mood = m => { const c = el.querySelector('svg.cat'); if (c) c.setAttribute('class', c.getAttribute('class').replace(/\bst-\w+/, 'st-' + m)); };
+      if (matchMedia('(hover: hover)').matches) { el.onmouseenter = () => mood('happy'); el.onmouseleave = () => mood('idle'); }
+    });
     const cur = store.get('current', null);
-    $('#resume').innerHTML = cur && cur.pgn ? `<button class="primary" id="bResume">Resume your game vs ${PERSONAS[cur.persona].name}</button>` : '';
+    $('#resume').innerHTML = cur && cur.pgn ? `<button class="primary resumebtn" id="bResume">▶ Resume your game vs ${Cats.nameFor(cur.persona, PERSONAS[cur.persona].name)}</button>` : '';
     if (cur && cur.pgn) $('#bResume').onclick = () => Play.start(cur.persona, cur.human, cur.pgn ? cur : null);
   }
 
@@ -93,7 +108,7 @@
     const acc = d.solved + d.failed ? Math.round(100 * d.solved / (d.solved + d.failed)) : 0;
     $('#tab-puzzles .pstats').innerHTML = `
       <div><b>${d.puzzleRating}</b><span>Puzzle rating</span></div>
-      <div><b>${d.streak.count && (d.streak.last === today() || d.streak.last === Core.addDays(today(), -1)) ? d.streak.count : 0}</b><span>Day streak (best ${d.streak.best || 0})</span></div>
+      <div><b>${streakShown()}</b><span>Day streak (best ${d.streak.best || 0})</span></div>
       <div><b>${d.solved}</b><span>Solved first try (${acc}%)</span></div>
       <div><b>${reviews}</b><span>Reviews due</span></div>`;
   }
@@ -125,6 +140,17 @@
   bindCheck(['#optHints', '#gHints'], 'hints');
   bindCheck(['#optSound', '#gSound'], 'sound');
   bindCheck(['#optVoice'], 'voice');
+  bindCheck(['#optEval', '#gEval'], 'evalbar');
+  document.querySelectorAll('#viewSeg button').forEach(b => {
+    b.classList.toggle('on', b.dataset.v === S.view);
+    b.onclick = () => { S.view = b.dataset.v; saveSettings(); document.querySelectorAll('#viewSeg button').forEach(x => x.classList.toggle('on', x === b)); };
+  });
+  // The cats on the opponent cards blink now and then, like the one at the table.
+  setInterval(() => {
+    const cats = [...document.querySelectorAll('#home:not(.hidden) .opp svg.cat')]; if (!cats.length) return;
+    const c = Core.pick(cats); c.classList.add('blink'); setTimeout(() => c.classList.remove('blink'), 260);
+  }, 1300);
+  $('#optTheme').innerHTML = Object.entries(PieceSets.BOARDS).map(([id, label]) => `<option value="${id}">${label}</option>`).join('');
   $('#optTheme').value = S.theme; $('#optTheme').onchange = e => { S.theme = e.target.value; saveSettings(); };
   $('#tBack').onclick = () => { Trainer.stop(); show(); };
 
@@ -133,11 +159,11 @@
     S.pieces = id; const set = PieceSets.SETS[id];
     if (set.board) { S.theme = set.board; $('#optTheme').value = set.board; }
     saveSettings(); PieceSets.apply(id);
-    $('#piecesName').textContent = set.name;
+    $('#piecesName').textContent = set.name; piecesMini();
     if (!$('#tab-play').classList.contains('hidden')) renderPlay();
   }
   function openGallery() {
-    const order = ['classic', 'cats', 'space', 'retro'];
+    const order = Object.keys(PieceSets.SETS);
     $('#gallery .sets').innerHTML = order.map(id => {
       const set = PieceSets.SETS[id];
       const img = (t, side) => id === 'classic' ? `<div class="pc classic ${side}${t}" style="position:relative"></div>`
@@ -154,9 +180,15 @@
     });
     $('#gallery').classList.remove('hidden');
   }
+  // The little knight and king on the Pieces button show the set that is on.
+  function piecesMini() {
+    const id = S.pieces in PieceSets.SETS ? S.pieces : 'classic';
+    $('#bPieces .pmini').innerHTML = ['wn', 'bk'].map(c => id === 'classic' ? `<i class="pc ${c} classic"></i>`
+      : `<i class="pc" style="background-image:url('${PieceSets.dataUrl(id, c[1], c[0])}')"></i>`).join('');
+  }
   $('#bPieces').onclick = openGallery;
   $('#bGalleryClose').onclick = () => $('#gallery').classList.add('hidden');
-  PieceSets.apply(S.pieces); $('#piecesName').textContent = (PieceSets.SETS[S.pieces] || PieceSets.SETS.classic).name;
+  PieceSets.apply(S.pieces); $('#piecesName').textContent = (PieceSets.SETS[S.pieces] || PieceSets.SETS.classic).name; piecesMini();
 
   window.Home = { show, showScreen };
   show();

@@ -30,7 +30,21 @@
     else nap(28);
   }
 
-  function render() { board.render(); renderSide(); }
+  // The who's-winning bar and the top captured row follow the board as drawn (the 3D table is shorter).
+  function layout() {
+    const wrap = root.querySelector('.boardwrap'), w = wrap.getBoundingClientRect(), b = board.el.getBoundingClientRect();
+    const bar = root.querySelector('.evalbar'), top = root.querySelector('.capTop'), d3 = S.view === '3d';
+    bar.style.top = (b.top - w.top) + 'px'; bar.style.height = b.height + 'px'; bar.style.left = (b.left - w.left - (d3 ? 44 : 36)) + 'px';
+    top.style.transform = '';
+    if (d3) top.style.transform = `translateY(${Math.max(0, b.top - top.getBoundingClientRect().bottom - 6)}px)`;
+  }
+  addEventListener('resize', () => { if (!root.classList.contains('hidden')) layout(); });
+
+  function render() {
+    board.render(); renderSide(); layout();
+    const off = !S.evalbar || G.over;           // the bar's switch lives in two places (home.js binds both)
+    root.querySelector('.evalbar').classList.toggle('hidden', off); root.querySelector('.evaltext').classList.toggle('hidden', off);
+  }
   function renderSide() {
     const c = chess(), hist = c.history(), cls = { blunder: 'bl', mistake: 'mi', best: 'gd' };
     let html = '';
@@ -56,8 +70,32 @@
 
   // ---------- the turn cycle ----------
   function startPreEval() {
-    const fen = chess().fen();
+    const fen = chess().fen(), gen = G.gen;
     G.pre = engine.analyse(fen, { depth: 12, multipv: 1, movetime: 6000 }).then(lines => ({ fen, lines }));
+    root.querySelector('.evalbar').classList.add('busy');
+    G.pre.then(r => { if (gen === G.gen && r.lines.length) showEval(r.lines[0]); });
+  }
+
+  // Who's winning: the bar beside the board and one plain line in the panel. Comes free with the search
+  // that grades Jim's move, so it updates when it is his turn. Engine units are inflated (see engine.js),
+  // with about +85 for the side to move; about 130 units is a pawn here.
+  function showEval(best) {
+    const bar = root.querySelector('.evalbar'), txt = root.querySelector('.evaltext'), on = S.evalbar && !G.over;
+    bar.classList.toggle('hidden', !on); txt.classList.toggle('hidden', !on); bar.classList.remove('busy');
+    if (!best) return;
+    const name = Cats.nameFor(G.persona, PERSONAS[G.persona].name).split(' ').pop();
+    let p, label;
+    if (best.mate) { p = best.mate > 0 ? 0.97 : 0.03; label = best.mate > 0 ? `You have mate in ${best.mate}. Find it!` : `${name} has mate in ${-best.mate}. Uh oh.`; }
+    else {
+      const x = best.cp - 85;
+      p = 1 / (1 + Math.exp(-x / 260));
+      label = x > 900 ? 'You are crushing it.' : x > 380 ? 'You are winning.' : x > 120 ? 'You are a bit ahead.'
+            : x < -900 ? `${name} is crushing you.` : x < -380 ? `${name} is winning.` : x < -120 ? `${name} is a bit ahead.` : 'Dead even.';
+    }
+    // Jim's share of the bar is his colour, on his side of the board.
+    bar.style.setProperty('--p', (p * 100).toFixed(1) + '%');
+    bar.dataset.me = G.human; bar.classList.toggle('flip', board.orientation !== G.human);
+    txt.innerHTML = `<i style="--p:${(p * 100).toFixed(0)}%"></i>${label}`;
   }
 
   async function humanMove(m, how = {}) {
@@ -95,7 +133,10 @@
     G.grades[chess().history().length - 1] = g.kind;
     renderSide();
     if (g.kind === 'blunder' || g.kind === 'mistake')
-      stage.offer(g.kind === 'blunder' ? 'Why?? 💬' : 'Why? 💬', () => { Coach.open(coach); Coach.ask('Why was my last move bad?'); }, 12000);
+      stage.offer(g.kind === 'blunder' ? 'Why?? 💬' : 'Why? 💬', () => {
+        if (!G.busy) return askWhy();
+        G.whyQueued = true; stage.say('Hold that thought. Let me move first.', 1800);      // asked once the cat has moved
+      }, 12000);
     if (mv.captured && g.kind !== 'blunder' && wantsTantrum(mv.captured)) await tantrum(gen);
     else await react(g.kind);
     if (gen !== G.gen) return;
@@ -165,12 +206,15 @@
     (mv.captured ? sfx.capture(mv.captured) : sfx.move());
     renderSide(); persist();
     if (chess().game_over()) return finish();
+    if (G.whyQueued) { G.whyQueued = false; setTimeout(askWhy, 600); }
     if (chess().in_check()) { sfx.check(); stage.mood('check', 2200); stage.say(line('check'), 2000); }
     else if (choice.why === 'snack') { stage.mood('eat', 2200); stage.say(line('snack'), 2400); }
     else if (mv.captured && Math.random() < 0.5) { stage.mood('happy', 1400); stage.say(line('capture'), 1600); }
     else stage.mood('idle');
     startPreEval(); startIdle();
   }
+
+  function askWhy() { Coach.open(coach); Coach.ask('Why was my last move bad?'); }
 
   // ---------- game end ----------
   function finish(resigned) {
@@ -188,11 +232,12 @@
     } else if (humanWon) {
       G.overText = 'Checkmate! You beat ' + name + '!';
       stage.mood('sad'); sfx.win(); stage.say(line('lose'), 4000);
+      setTimeout(() => Core.confetti($('#result .confetti')), 1700);
     } else {
       G.overText = 'Draw.';
       stage.mood('sleep'); stage.say(line('draw'), 4000);
     }
-    renderSide();
+    renderSide(); showEval(null);
     saveGame(outcome, resigned);
     store.set('current', null);
     setTimeout(() => {
@@ -234,7 +279,7 @@
   async function start(persona, human, saved) {
     G.gen++; clearIdle(); engine.stop();
     G.persona = persona; G.human = human === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : human;
-    G.over = false; G.busy = false; G.grades = (saved && saved.grades) || []; G.review = (saved && saved.review) || []; G.lastWhy = (saved && saved.lastWhy) || null;
+    G.over = false; G.busy = false; G.whyQueued = false; G.grades = (saved && saved.grades) || []; G.review = (saved && saved.review) || []; G.lastWhy = (saved && saved.lastWhy) || null;
     Coach.reset(); Coach.close();
     board.chess = new Chess(); if (saved && saved.pgn) board.chess.load_pgn(saved.pgn);
     board.orientation = G.human; board.sel = null; board.arrows = []; board.marks = {};
@@ -242,7 +287,9 @@
     stage.setCat(persona, PERSONAS[persona].name, 'rating ' + PERSONAS[persona].rating);
     Coach.refreshAll();
     Home.showScreen('game'); $('#result').classList.add('hidden');
-    $('#gHints').checked = S.hints; $('#gSound').checked = S.sound;
+    $('#gHints').checked = S.hints; $('#gSound').checked = S.sound; $('#gEval').checked = S.evalbar; viewLabel();
+    root.querySelector('.evalbar').style.setProperty('--p', '50%'); root.querySelector('.evaltext').textContent = '';
+    showEval(null);
     stage.say(saved ? 'Oh, you are back. Where were we?' : line('greet'), 3500);
     G.busy = true; render();
     await engineReady;
@@ -257,7 +304,12 @@
   function stop() { G.gen++; clearIdle(); engine.stop(); G.busy = false; }
 
   // ---------- controls ----------
-  $('#bFlip').onclick = () => { board.orientation = board.orientation === 'w' ? 'b' : 'w'; render(); };
+  $('#bFlip').onclick = () => { board.orientation = board.orientation === 'w' ? 'b' : 'w'; render();
+                                root.querySelector('.evalbar').classList.toggle('flip', board.orientation !== G.human); };
+  // 2D board or the 3D table, switchable mid-game.
+  const viewLabel = () => { $('#bView').textContent = S.view === '3d' ? '▦ 2D board' : '◭ 3D board'; };
+  $('#bView').onclick = () => { S.view = S.view === '3d' ? 'flat' : '3d'; Core.saveSettings(); viewLabel(); render(); };
+
   $('#bLobby').onclick = () => { persist(); stop(); Home.show('play'); };
   $('#bResLobby').onclick = () => { stop(); Home.show('play'); };
   $('#bRematch').onclick = () => start(G.persona, S.color);
@@ -269,7 +321,14 @@
     const back = () => { c.undo(); G.grades.length = c.history().length; G.review = G.review.filter(r => r.ply < c.history().length); };
     back(); if (c.turn() !== G.human) back();
     const h = c.history({ verbose: true }); board.last = h.length ? [h[h.length - 1].from, h[h.length - 1].to] : null;
-    board.sel = null; stage.mood('judge', 1800); stage.say(line('takeback'), 2200); render(); persist(); startPreEval(); startIdle();
+    board.sel = null; stage.mood('judge', 1800); stage.say(line('takeback'), 2200); render(); persist();
+    if (c.turn() !== G.human) {                 // took back as Black before the cat's first move: the cat moves again
+      G.busy = true; render(); const gen = G.gen; stage.mood('think');
+      const lines = await engine.analyse(c.fen(), { depth: 10, multipv: PERSONAS[G.persona].multipv, movetime: 2000 });
+      if (gen === G.gen) await catMove(lines, gen);
+      return;
+    }
+    startPreEval(); startIdle();
   };
 
   // Hook for a live Claude coaching session: read the game, put words in the cat's mouth, play a move.

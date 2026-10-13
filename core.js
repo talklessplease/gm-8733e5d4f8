@@ -8,7 +8,8 @@
     set(k, v) { try { localStorage.setItem('gm.' + k, JSON.stringify(v)); } catch {} },
   };
   const S = { hints: store.get('hints', true), theme: store.get('theme', 'walnut'), sound: store.get('sound', true), color: store.get('color', 'w'),
-             voice: store.get('voice', false), pieces: store.get('pieces', 'classic') };
+             voice: store.get('voice', false), pieces: store.get('pieces', 'classic'),
+             view: store.get('view', '3d'), evalbar: store.get('evalbar', true) };
   const saveSettings = () => Object.keys(S).forEach(k => store.set(k, S[k]));
 
   // ---------- sound (synthesized, no files) ----------
@@ -70,11 +71,13 @@
     retro: { move: () => { tone(1046, 0.04, 'square', 0.05); tone(784, 0.04, 'square', 0.05, null, 0.045); },
              capture: () => [880, 659, 523, 392].forEach((fr, i) => tone(fr, 0.05, 'square', 0.06, null, i * 0.05)) },
   };
-  const pack = () => PACKS[S.pieces] || PACKS.classic;
+  // Sets registered from their own files bring their own pack, played with this kit.
+  const KIT = { tone, noise, meow, purr, saber };
+  const pack = () => PACKS[S.pieces] || (window.PieceSets && PieceSets.SETS[S.pieces] && PieceSets.SETS[S.pieces].pack) || PACKS.classic;
   const sfx = {
-    move: () => pack().move(),
-    capture: t => pack().capture(t),
-    promote: () => S.pieces === 'cats' ? meow(1.25, 0.1) : [523, 784, 1046].forEach((fr, i) => tone(fr, 0.12, S.pieces === 'retro' ? 'square' : 'triangle', 0.08, null, i * 0.08)),
+    move: () => pack().move(KIT),
+    capture: t => pack().capture(t, KIT),
+    promote: () => pack().promote ? pack().promote(KIT) : S.pieces === 'cats' ? meow(1.25, 0.1) : [523, 784, 1046].forEach((fr, i) => tone(fr, 0.12, S.pieces === 'retro' ? 'square' : 'triangle', 0.08, null, i * 0.08)),
     meow, purr,
     slap: () => { noise(0.22, 0.7, 700); tone(70, 0.3, 'sine', 0.5, 40); },
     laser: () => { tone(1400, 0.9, 'sawtooth', 0.07, 180); tone(1450, 0.9, 'square', 0.04, 200); },
@@ -172,6 +175,22 @@
     unoffer() { clearTimeout(this.offerTimer); if (this.offerEl) { this.offerEl.remove(); this.offerEl = null; } }
   }
 
+  // ---------- every cat on screen watches the pointer (eyes only, while idle; see .pupil in game.css) ----------
+  let lookFrame = null;
+  addEventListener('pointermove', e => {
+    if (lookFrame) return;
+    lookFrame = requestAnimationFrame(() => {
+      lookFrame = null;
+      document.querySelectorAll('svg.cat').forEach(c => {
+        const r = c.getBoundingClientRect(); if (!r.width) return;
+        const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * 128 / 350);   // eyes: (160, 128) of 320x350
+        const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 260);
+        c.style.setProperty('--lx', (dx / d * 5.5 * k).toFixed(1) + 'px');
+        c.style.setProperty('--ly', (dy / d * 4.5 * k).toFixed(1) + 'px');
+      });
+    });
+  }, { passive: true });
+
   // ---------- saved progress (games/progress.json via the server; localStorage fallback) ----------
   const today = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const addDays = (day, n) => { const d = new Date(day + 'T12:00:00'); d.setDate(d.getDate() + n); return today(d); };
@@ -180,6 +199,7 @@
   const Progress = {
     data: BLANK(),
     async load() {
+      if (this._t) { clearTimeout(this._t); this._t = null; await this.push(); }      // a save still waiting goes first
       try {
         const d = await (await fetch('/api/progress')).json();
         this.data = Object.assign(BLANK(), d && d.version ? d : store.get('progress', {}));
@@ -189,9 +209,9 @@
     save() {
       store.set('progress', this.data);
       clearTimeout(this._t);
-      this._t = setTimeout(() => fetch('/api/progress', { method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                                                          body: JSON.stringify(this.data) }).catch(() => {}), 300);
+      this._t = setTimeout(() => { this._t = null; this.push(); }, 300);
     },
+    push() { return fetch('/api/progress', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.data) }).catch(() => {}); },
   };
 
   // Forgiving streak: up to two missed days in any 7-day window are covered by "cat naps".
@@ -209,9 +229,18 @@
     return { count, best: Math.max(s.best || 0, count), last: t, saves };
   }
 
+  // Confetti for a win or a perfect lesson: falling paper inside box (an overlay's .confetti layer).
+  function confetti(box) {
+    const cols = ['#f4c95d', '#8f7cff', '#ff6b9a', '#4fd1a5', '#5ab0ff', '#ffffff'];
+    box.innerHTML = Array.from({ length: 90 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;background:${cols[Math.random() * cols.length | 0]};`
+      + `--dx:${(Math.random() * 160 - 80) | 0}px;--r:${(Math.random() * 1080 - 540) | 0}deg;`
+      + `animation-duration:${(2.2 + Math.random() * 1.8).toFixed(2)}s;animation-delay:${(Math.random() * 0.6).toFixed(2)}s"></i>`).join('');
+    setTimeout(() => { box.innerHTML = ''; }, 4800);
+  }
+
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const uci = mv => mv.from + mv.to + (mv.promotion || '');
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  window.Core = { $, store, S, saveSettings, sfx, speak, engine, engineReady, Stage, Progress, today, addDays, nextStreak, wait, uci, pick };
+  window.Core = { $, store, S, saveSettings, sfx, KIT, speak, engine, engineReady, Stage, Progress, today, addDays, nextStreak, wait, uci, pick, confetti };
 })();

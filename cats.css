@@ -158,3 +158,23 @@
 .cat.purring .body { animation: purrbuzz .09s linear infinite; }
 .cat.purring .head { animation: purrbuzz .09s linear infinite reverse; }
 @keyframes purrbuzz { 50% { transform: translate(.8px, .4px); } }
+
+/* Spooky Season: the pumpkin pail flickers, the cauldron bubbles and steams, bats flutter, the ghost sheet
+   sways, and the spider on Witch Gus's hat dangles. Ghost Gus's ears stay under the sheet whatever the mood. */
+.cat-ghost .ear { display: none; }
+.cat .jack-glow { animation: jackflicker 1.5s linear infinite; }
+@keyframes jackflicker { 0%, 100% { opacity: 1; } 12% { opacity: .6; } 20% { opacity: .95; } 36% { opacity: .7; } 50% { opacity: 1; } 68% { opacity: .55; } 82% { opacity: .9; } }
+.cat .brew { animation: orb 2.2s ease-in-out infinite; }
+.cat .brewbubble { opacity: 0; animation: brewbubble 1.9s ease-in infinite; }
+@keyframes brewbubble { 0% { opacity: 0; transform: translateY(0) scale(.5); } 15% { opacity: .95; }
+                        80% { opacity: .8; transform: translateY(-26px) scale(1); } 100% { opacity: 0; transform: translateY(-32px) scale(1.4); } }
+.cat .steam { animation: steam 3.2s ease-in-out infinite; transform-origin: 270px 240px; }
+@keyframes steam { 50% { transform: translateY(-5px) skewX(6deg); opacity: .2; } }
+.cat .bat { animation: batbob 2.8s ease-in-out infinite; }
+@keyframes batbob { 25% { transform: translate(5px, -6px); } 50% { transform: translate(0, -10px); } 75% { transform: translate(-5px, -4px); } }
+.cat .bat .wing { animation: wingflap .3s ease-in-out infinite alternate; transform-origin: 0 0; }
+@keyframes wingflap { to { transform: scaleY(.3); } }
+.cat .sheet-sway { animation: sheetsway 4.6s ease-in-out infinite; transform-origin: 160px 180px; }
+@keyframes sheetsway { 25% { transform: skewX(1.6deg); } 75% { transform: skewX(-1.6deg); } }
+.cat .spider { animation: spider 3.6s ease-in-out infinite; }
+@keyframes spider { 50% { transform: translateY(8px); } }

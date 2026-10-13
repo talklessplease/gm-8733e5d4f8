@@ -32,6 +32,8 @@
     render() {
       const el = this.el, chess = this.chess;
       el.dataset.theme = S.theme;
+      el.classList.toggle('b3d', S.view === '3d');             // tilted table, pieces stand up (game.css)
+      el.parentElement.classList.toggle('v3d', S.view === '3d');
       const targets = this.sel && S.hints ? this.legalFrom(this.sel) : [];
       const checkSide = chess.in_check() ? chess.turn() : null;
       el.innerHTML = '';
@@ -46,6 +48,7 @@
         if (t && (t.captured || t.flags.includes('e'))) d.classList.add('cap');
         const p = chess.get(sq);
         if (p) {
+          d.classList.add('occ');
           if (p.type === 'k' && p.color === checkSide) d.classList.add('check');
           const pc = document.createElement('div'); pc.className = 'pc ' + p.color + p.type;
           const v = (fi * 2 + rk) % 3; if (v) pc.classList.add('v' + v);   // themed sets: desync blinks and tail swishes
@@ -58,6 +61,7 @@
         el.appendChild(d);
       });
       this.drawArrows(); el.appendChild(this.svg);
+      if (S.view === '3d') el.insertAdjacentHTML('beforeend', '<div class="edge"></div>');
       if (this.anim) { this.slide(this.anim); this.anim = null; }
     }
 
@@ -67,11 +71,13 @@
       moves.forEach(({ from, to }) => {
         const pc = this.el.querySelector(`[data-sq="${to}"] .pc`); if (!pc) return;
         const a = this.pos(from), b = this.pos(to);
+        // The individual translate property moves the piece along the board, flat or tilted, and leaves
+        // transform free for the hop, lift and tantrum animations.
         pc.style.transition = 'none'; pc.style.zIndex = 6;
-        pc.style.transform = `translate(${(a.c - b.c) * size}px, ${(a.r - b.r) * size}px)`;
+        pc.style.translate = `${(a.c - b.c) * size}px ${(a.r - b.r) * size}px`;
         void pc.offsetWidth;
-        pc.style.transition = 'transform .2s cubic-bezier(.25,.8,.35,1)'; pc.style.transform = '';
-        setTimeout(() => { pc.style.transition = ''; pc.style.zIndex = ''; }, 230);
+        pc.style.transition = 'translate .24s cubic-bezier(.25,.8,.35,1)'; pc.style.translate = '';
+        setTimeout(() => { pc.style.transition = ''; pc.style.zIndex = ''; }, 260);
       });
     }
     // Make a move from code (engine, puzzle opponent) and animate it, including the castling rook.
@@ -85,7 +91,17 @@
       return m;
     }
     // Little celebrations that follow a move: a poof when a pawn promotes.
-    afterMove(m) { if (m && m.promotion) setTimeout(() => this.poof(m.to), 180); }
+    afterMove(m) {
+      if (m && m.captured) setTimeout(() => this.burst(m.to), 200);
+      if (m && m.promotion) setTimeout(() => this.poof(m.to), 180);
+    }
+    // A little dust burst where a piece got taken.
+    burst(sq) {
+      const el = this.squareEl(sq); if (!el) return;
+      const b = document.createElement('div'); b.className = 'burst';
+      b.innerHTML = Array.from({ length: 9 }, (_, i) => `<i style="--a:${i * 40 + Math.random() * 20}deg;--d:${(0.32 + Math.random() * 0.22).toFixed(2)}"></i>`).join('');
+      el.appendChild(b); setTimeout(() => b.remove(), 700);
+    }
     poof(sq) {
       const el = this.squareEl(sq); if (!el) return;
       const p = document.createElement('div'); p.className = 'poof';
@@ -118,7 +134,7 @@
       const endDrag = () => {
         if (!drag) return;
         if (drag.ghost) drag.ghost.remove();
-        drag = null;
+        drag = null; el.classList.remove('dragging');
         document.querySelectorAll('.ghost').forEach(g => g.remove());
         this.render();
       };
@@ -142,6 +158,7 @@
         if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 5) {
           drag.moved = true;
           const p = this.chess.get(drag.sq);
+          el.classList.add('dragging');
           drag.ghost = document.createElement('div'); drag.ghost.className = 'ghost pc ' + p.color + p.type;
           document.body.appendChild(drag.ghost);
           const orig = el.querySelector(`[data-sq="${drag.sq}"] .pc`); if (orig) orig.classList.add('dim');
@@ -150,7 +167,7 @@
       });
       el.addEventListener('pointerup', e => {
         if (!drag) return;
-        const d = drag; drag = null;
+        const d = drag; drag = null; el.classList.remove('dragging');
         if (d.ghost) d.ghost.remove();
         if (d.moved) {
           const under = document.elementFromPoint(e.clientX, e.clientY), tEl = under && under.closest('.sq');

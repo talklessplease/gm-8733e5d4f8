@@ -128,10 +128,56 @@
     lose:  ['Beaten, I am. Proud, I am. A nap, I need.', 'Impossible. Wait. Possible, it was.'],
     tantrum: ['Angry, I am. Yes.'], oops: ['Hmm. To the dark side, anger leads.'], innocent: ['*purrs wisely* Happened, nothing did.'],
   };
+  // Spooky Season costumes (the Halloween pieces). Anything missing falls back to the cat underneath.
+  PERSONA.pumpkin = {       // Kitten Gus as a jack-o'-lantern, with a pumpkin pail of candy
+    greet: ['Trick or treat! I am Pumpkin Gus! Can I have your bishop?', 'Happy Halloween! I am a pumpkin! Pumpkins are great at chess! Probably!'],
+    think: ['Ooh, a spooky horse!', 'Which one is the candy piece?', 'Eeny, meeny, pumpkin pie...'],
+    blunder: ['Ooh, a free treat! Thank you!', 'Even a pumpkin saw that one!', 'Trick or treat? Definitely treat!'],
+    laugh: ['Hee hee! Spooky bad!', 'Ha! That was scarier than my costume!'],
+    check: ['Check! Boo! Did I scare you?'],
+    win:   ['I WON?! Best Halloween EVER!', 'Laser eyes! Pumpkin power!'],
+    lose:  ['Good game! Want some of my candy? Just one.', 'You win! Can we play again after candy?'],
+    tantrum: ['NOOO! That was my candy piece!'], oops: ['Oopsie! Too spooky!'], innocent: ['*tiny pumpkin purr* Still friends?'],
+  };
+  PERSONA.ghost = {         // Lazy Gus under a bedsheet, with a pillowcase of candy
+    greet: ['Boo. That is all you get. I am conserving energy.', 'I am a ghost. Ghosts do not have to try. One game.'],
+    think: ['*crinkle crinkle*', 'Hold on. Unwrapping something.', 'Mm. Peanut butter cup.', 'One more candy, then I haunt the board.'],
+    snack: ['Wait, did I just... whatever. Candy.', 'Was that bad? I was eating through the mouth hole.'],
+    blunder: ['Boo. Also, you hung that.', 'That move haunts me. Mostly because it is yours.'],
+    laugh: ['Heh heh. Ooooh, that was bad.'],
+    check: ['Check. Boo.'],
+    win:   ['Won it. Now I float to the couch.', 'Haunted. Nap time.'],
+    lose:  ['Fine. I was full of candy anyway.', 'You only won because this sheet has no side vision.'],
+    tantrum: ['Hey! I was haunting that!'], oops: ['...Too full of candy to stay mad.'], innocent: ['*purrs under the sheet* What laser?'],
+  };
+  PERSONA.witch = {         // Wizard Gus as a witch, with a cauldron and a broom
+    greet: ['Double, double, toil and trouble. Your opening will be trouble.', 'Welcome to my cauldron. Mind the bubbles. Sit.'],
+    think: ['The cauldron reveals... hmm.', 'Eye of newt, wing of bat, which bishop is that?', 'Stirring eleventy moves ahead...'],
+    blunder: ['By my broom, NO!', 'The cauldron did not foresee THAT.', 'I have seen better moves from a toad.'],
+    best:  ['*slow witchy blink*', 'The apprentice learns.'],
+    laugh: ['Hehehe! The cauldron loves that one!', 'A cackle! You have earned a cackle!'],
+    check: ['Check. Hehehe.', 'Check. The brew bubbles for your king.'],
+    win:   ['As the cauldron foretold. LASER EYES.', 'Checkmate. Into the brew you go. Hehehe.'],
+    lose:  ['Impossible. The cauldron said...', 'Well played. I will add that to my spellbook.'],
+    tantrum: ['By my broom, you will regret that!'], oops: ['Hmm. That spell was not allowed.'], innocent: ['*purrs mysteriously* Nothing in the cauldron.'],
+  };
+  PERSONA.bowiecula = {     // King Bowie as a vampire: high collar, cape, a goblet of "tomato juice"
+    greet: ['Good evening, darling. Welcome to my castle. Do not touch the cape.', 'Darling. I never drink... milk. Shall we play?'],
+    think: ['One moment. Fixing my collar.', 'Hmm, which move flatters my cape...', 'Thinking. In the dark. Beautifully.'],
+    preen: ['Mirror, please. ...Darling, where did I go?', 'No reflection, and still gorgeous. Imagine.'],
+    blunder: ['Oh honey, you just gave me a snack.', 'That move was so last century. And I would know.', 'Bleh. Bleh! Darling, no.'],
+    laugh: ['Ah ha ha ha! Darling, no!', 'Oh honey. *dabs tear with cape*'],
+    check: ['Check, darling. I vant your king.', 'Check. The night is young, sweetie.'],
+    checked: ['How dare you. Not the cape.'],
+    capture: ['Mine now. Bleh.', 'Delicious. Like tomato juice.'],
+    win:   ['Checkmate, darling. Now, my tomato juice.', 'All hail the Count. Lasers are this century.'],
+    lose:  ['I let you win. It is called grace. Eternal grace.', 'Fine. Back to my coffin. It is velvet.'],
+    tantrum: ['Not my pawn, darling! It was centuries old!'], oops: ['...My fangs slipped, sweetie.'], innocent: ['*purrs behind the cape* As you were.'],
+  };
   window.Lines = {
     DATA: { GUS, PERSONA },                    // for scripts/record-voices.mjs
     say(persona, event) {
-      const costume = window.Cats ? Cats.artFor(persona) : persona;       // Space Saga: in-costume lines first
+      const costume = window.Cats ? Cats.artFor(persona) : persona;       // costume sets: in-costume lines first
       if (PERSONA[costume] && PERSONA[costume][event]) persona = costume;
       const pool = (PERSONA[persona] && PERSONA[persona][event]) || GUS[event] || [''];
       return pool[Math.floor(Math.random() * pool.length)];

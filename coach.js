@@ -109,7 +109,7 @@
       out.push(`Moves so far: ${movesText(c)}`);
       const h = c.history({ verbose: true }), jimLast = [...h].reverse().find(m => m.color === ctx.human), catLast = [...h].reverse().find(m => m.color !== ctx.human);
       if (jimLast) {
-        const rv = [...(ctx.review || [])].reverse().find(r => r.san === jimLast.san);
+        const rv = (ctx.review || []).find(r => r.ply === h.lastIndexOf(jimLast));      // by move number: the same SAN can repeat
         const gr = ctx.grades[h.lastIndexOf(jimLast)];
         out.push(`Jim's last move: ${jimLast.san}. Engine grade: ${gr || 'not graded'}${rv ? `. Better was ${plain(rv.fen, rv.best)}` : ''}.`);
       }
@@ -247,8 +247,8 @@
   }
   const esc = s => s.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
   const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\*(.+?)\*/g, '<i>$1</i>');
-  function addMsg(who, text, say) {
-    const box = cur.drawer.querySelector('.ask-msgs'), el = document.createElement('div');
+  function addMsg(who, text, say, drawer = cur.drawer) {
+    const box = drawer.querySelector('.ask-msgs'), el = document.createElement('div');
     el.className = 'msg ' + who;
     el.innerHTML = who === 'jim' ? esc(text) : (say ? `<div class="say">${md(say)}</div>` : '') + (text ? `<div class="ans">${md(text)}</div>` : '');
     box.appendChild(el); box.scrollTop = box.scrollHeight;
@@ -257,7 +257,12 @@
 
   async function ask(question) {
     if (!cur || busy) return;
-    const self = cur, ctx = self.getCtx();
+    const self = cur;
+    // A follow-up review question while the worst moment is on the board: put the whole game back first,
+    // so the facts have every move (showWorst puts the moment back after the answer).
+    const isReview = q => /review|wrong|practice/i.test(q), back = self.drawer.querySelector('.chip-back');
+    if (back && isReview(question)) back.click();
+    const ctx = self.getCtx(), askedFen = ctx.board.chess.fen();
     if (ctx.blocked) { addMsg('cat', ctx.blocked, null); return; }
     busy = true; self.drawer.classList.add('busy');
     addMsg('jim', question);
@@ -268,7 +273,7 @@
     self.stage.mood(ctx.persona === 'lazy' ? 'eat' : 'think'); self.stage.say(lines[0], 0, { silent: true });
     let reply;
     try {
-      const review = ctx.mode === 'game' && ctx.over && /review|wrong|practice/i.test(question);
+      const review = ctx.mode === 'game' && ctx.over && isReview(question);
       const facts = review ? await reviewFacts(ctx) : await buildFacts(ctx);
       const r = await fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ persona: Cats.artFor(ctx.persona), mode: review ? 'review' : ctx.mode, facts, question, history: history.slice(-3),
@@ -281,14 +286,15 @@
       const msg = reply.error === 'busy' ? 'One question at a time. I am a cat, not an octopus.'
         : reply.error === 'timeout' ? 'I fell asleep thinking about it. Ask me again?'
         : 'The orb is offline. No wifi, no wisdom. (Ask Gus needs internet. Everything else works offline.)';
-      addMsg('cat', '', msg); self.stage.mood('sleep', 3000); self.stage.say(msg, 4000); return;
+      addMsg('cat', '', msg, self.drawer); self.stage.mood('sleep', 3000); self.stage.say(msg, 4000); return;
     }
+    // The answer goes to the chat that asked, even if Jim closed it while Gus was thinking.
     history.push({ q: question, a: reply.say + ' ' + reply.answer });
-    addMsg('cat', reply.answer, reply.say);
+    addMsg('cat', reply.answer, reply.say, self.drawer);
     self.stage.mood(reply.mood, 7000); self.stage.say(reply.say, 9000, { live: true });
     if (reply.mood === 'laugh') Core.sfx.laugh();
     if (reply.showWorst && ctx.review && ctx.review.length) showWorst(self, ctx);
-    else { const safe = spoilerSafe(reply, ctx); self.board.setDecor({ arrows: safe.arrows, marks: safe.marks }); }
+    else if (self.board.chess.fen() === askedFen) { const safe = spoilerSafe(reply, ctx); self.board.setDecor({ arrows: safe.arrows, marks: safe.marks }); }
   }
 
   // Hard rule, not left to the model: in an unsolved puzzle or homework item, an arrow that draws the
@@ -309,13 +315,14 @@
 
   // Review: put the worst moment of the game on the board, with "you played" and "better was" arrows.
   function showWorst(self, ctx) {
-    const worst = [...ctx.review].sort((a, b) => b.loss - a.loss)[0], b = self.board, finalFen = b.chess.fen();
+    const worst = [...ctx.review].sort((a, b) => b.loss - a.loss)[0], b = self.board, finalPgn = b.chess.pgn();
     b.chess = new Chess(worst.fen); b.last = null;
     b.setDecor({ arrows: [{ from: worst.played.slice(0, 2), to: worst.played.slice(2, 4), color: 'bad' }, { from: worst.best.slice(0, 2), to: worst.best.slice(2, 4), color: 'good' }] });
-    const box = cur.drawer.querySelector('.ask-chips');
+    const box = self.drawer.querySelector('.ask-chips');
+    box.querySelectorAll('.chip-back').forEach(x => x.remove());
     const back = document.createElement('button'); back.type = 'button'; back.className = 'chip-back';
     back.textContent = `Showing move ${Math.floor(worst.ply / 2) + 1}. Back to the final position`;
-    back.onclick = () => { b.chess = new Chess(finalFen); b.setDecor({}); back.remove(); };
+    back.onclick = () => { b.chess = new Chess(); b.chess.load_pgn(finalPgn); b.setDecor({}); back.remove(); };      // the whole game, moves and all
     box.prepend(back);
   }
 

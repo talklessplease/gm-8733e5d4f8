@@ -98,8 +98,11 @@
     const clamp = v => Math.max(-2500, Math.min(2500, v));
     const loss = Math.max(0, clamp(best) - clamp(played));
     if (playedBest || loss <= 20) return { kind: playedBest ? 'best' : 'good', loss };
-    if (loss >= 320 && best > -900) return { kind: 'blunder', loss };      // about a minor piece, or two pawns
-    if (loss >= 180 && best > -900) return { kind: 'mistake', loss };      // about a pawn, with margin for depth-12 noise
+    // Not when the game is already decided either way: already lost, or still crushing after the move
+    // (a queen up, every move wins; flagging those filled homework with false alarms).
+    const live = best > -900 && played < 900;
+    if (loss >= 320 && live) return { kind: 'blunder', loss };      // about a minor piece, or two pawns
+    if (loss >= 180 && live) return { kind: 'mistake', loss };      // about a pawn, with margin for depth-12 noise
     return { kind: 'ok', loss };
   }
 

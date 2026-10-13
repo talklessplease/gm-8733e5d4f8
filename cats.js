@@ -20,6 +20,12 @@
     threepio: { cat: 'gus', chub: 0.94, head: 1.08, metal: '#dcaa3e', extras: ['goldsuit', 'goldcap', 'r2'] },
     leia:      { cat: 'gus', chub: 1.26, head: 1.0,  extras: ['gown', 'buns', 'blaster', 'bunplate', 'churu', 'crumbs'] },
     yoda:      { cat: 'gus', chub: 0.94, head: 1.06, extras: ['jedicloak', 'jedirobe', 'yodaears', 'wisps', 'greensaber', 'stick'] },
+    // Spooky Season cast (see SPOOKY below). legs: sleeve colour over the front legs (the paws stay fur).
+    pumpkin:   { cat: 'gus', chub: 0.9, head: 1.12, extras: ['pumpkinsuit', 'leafcollar', 'stemcap', 'candypail'] },
+    ghost:     { cat: 'gus', chub: 1.32, head: 1.0, legs: '#f3f1f6', extras: ['ghostsheet', 'ghosthood', 'candysack', 'lolly', 'wrappers'] },
+    witch:     { cat: 'gus', chub: 1.0,  head: 1.0, extras: ['witchrobe', 'witchhat', 'cauldron', 'broom'] },
+    bowiecula: { cat: 'bowie', chub: 1.12, head: 1.04, legs: '#2e2838',
+                 extras: ['vampcape', 'vampsuit', 'vampcollar', 'medallion', 'widowpeak', 'fangs', 'goblet', 'bats'] },
     fat:    { cat: 'gus', chub: 1.62, head: 1.06, extras: ['treats', 'churu', 'crumbs'] },   // app icon only
   };
 
@@ -40,10 +46,11 @@
       <circle class="laser-glow" cx="${cx}" cy="128" r="15" fill="#ffdf6b"/>
     </g>`;
 
+  let uid = 0;
   function svg(look) {
     const L = LOOKS[look], p = PAL[L.cat], bowie = L.cat === 'bowie', has = x => L.extras.includes(x);
     const bw = 78 * L.chub;                 // half-width of the body
-    const ID = look;
+    const ID = look + '-' + (++uid);        // unique per drawing: a hidden copy of the same cat (the home cards) must not own the gradients
     const fluff = bowie ? 'url(#fluff-ID)' : '';
     let s = `<svg class="cat cat-${look} st-idle" viewBox="0 0 320 350" xmlns="http://www.w3.org/2000/svg" aria-label="${look}">
     <defs>
@@ -54,6 +61,8 @@
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
       <radialGradient id="body-ID" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="${p.light}"/><stop offset="1" stop-color="${p.fur}"/></radialGradient>
       <linearGradient id="gold-ID" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7dc84"/><stop offset=".55" stop-color="#dcaa3e"/><stop offset="1" stop-color="#a87a1e"/></linearGradient>
+      <radialGradient id="pump-ID" cx="38%" cy="32%" r="78%"><stop offset="0" stop-color="#ffab52"/><stop offset="1" stop-color="#e06a18"/></radialGradient>
+      <radialGradient id="sheet-ID" cx="45%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d8d3e3"/></radialGradient>
       <linearGradient id="table-ID" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5236"/><stop offset="1" stop-color="#4a2f1e"/></linearGradient>
     </defs>`;
 
@@ -72,6 +81,8 @@
     if (has('cape')) s += `<path d="M${160 - bw - 30} 300 L${160 - bw + 4} 196 Q160 168 ${160 + bw - 4} 196 L${160 + bw + 30} 300 Z" fill="#8e1b2e"/>
       <path d="M${160 - bw - 30} 300 L${160 - bw + 4} 196 M${160 + bw - 4} 196 L${160 + bw + 30} 300" fill="none" stroke="#5e0f1d" stroke-width="4"/>
       <path d="M${160 - bw - 18} 296 L${160 - bw + 2} 230 M${160 + bw + 18} 296 L${160 + bw - 2} 230" stroke="#b02a40" stroke-width="3" opacity=".7"/>`;
+    if (has('vampcape')) s += `<path d="M${160 - bw - 38} 300 L${160 - bw + 2} 188 Q160 158 ${160 + bw - 2} 188 L${160 + bw + 38} 300 Z" fill="#141018"/>
+      <path d="M${160 - bw - 38} 300 L${160 - bw + 2} 188 L${160 - bw + 18} 194 L${160 - bw - 12} 300 Z M${160 + bw + 38} 300 L${160 + bw - 2} 188 L${160 + bw - 18} 194 L${160 + bw + 12} 300 Z" fill="#a8122a"/>`;
     s += `<g class="body"><path d="M${160 - bw} 300 C ${160 - bw} 220, ${160 - bw * 0.62} 170, 160 168 C ${160 + bw * 0.62} 170, ${160 + bw} 220, ${160 + bw} 300 Z"
       fill="url(#body-ID)" filter="${fluff}"/>
       <path d="M${160 - bw * 0.48} 300 C ${160 - bw * 0.5} 240, ${160 - bw * 0.3} 200, 160 196 C ${160 + bw * 0.3} 200, ${160 + bw * 0.5} 240, ${160 + bw * 0.48} 300 Z"
@@ -102,7 +113,25 @@
       <path d="M${160 - bw * 0.9} 202 q${bw * 0.18} -8 ${bw * 0.36} 0 M${160 + bw * 0.54} 202 q${bw * 0.18} -8 ${bw * 0.36} 0" fill="none" stroke="#5a5a6a" stroke-width="2"/>
       <rect x="${160 - bw * 0.62}" y="276" width="${bw * 1.24}" height="12" rx="3" fill="#2a2a34" stroke="#5a5a6a" stroke-width="2"/>
       ${[-0.42, -0.18, 0.18, 0.42].map(k => `<rect x="${160 + bw * k - 6}" y="273" width="12" height="18" rx="2" fill="#b9bec8" stroke="#333" stroke-width="1.5"/>`).join('')}`;
+    if (has('pumpkinsuit')) s += `<path d="M${160 - bw - 16} 300 C ${160 - bw - 28} 238, ${160 - bw - 6} 186, 160 182 C ${160 + bw + 6} 186, ${160 + bw + 28} 238, ${160 + bw + 16} 300 Z" fill="url(#pump-ID)" stroke="#a8501a" stroke-width="2.5"/>
+      <g fill="none" stroke="#c4621a" stroke-width="3" stroke-linecap="round" opacity=".85">
+        <path d="M${160 - bw * 0.62} 194 C ${160 - bw * 1.02} 230, ${160 - bw * 1.0} 272, ${160 - bw * 0.82} 300 M${160 + bw * 0.62} 194 C ${160 + bw * 1.02} 230, ${160 + bw * 1.0} 272, ${160 + bw * 0.82} 300"/>
+        <path d="M${160 - bw * 0.22} 186 C ${160 - bw * 0.4} 228, ${160 - bw * 0.4} 270, ${160 - bw * 0.3} 300 M${160 + bw * 0.22} 186 C ${160 + bw * 0.4} 228, ${160 + bw * 0.4} 270, ${160 + bw * 0.3} 300"/></g>
+      <path d="M${160 - bw - 8} 250 Q ${160 - bw - 10} 222 ${160 - bw + 10} 202" stroke="#ffc98a" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"/>`;
+    if (has('ghostsheet')) s += `<g class="sheet-sway"><path d="M${160 - bw - 12} 300 C ${160 - bw - 8} 232, 112 180, 160 176 C 208 180, ${160 + bw + 8} 232, ${160 + bw + 12} 300 Z" fill="url(#sheet-ID)" stroke="#c9c3d6" stroke-width="2"/>
+      <path d="M${160 - bw * 0.7} 216 Q${160 - bw * 0.82} 258 ${160 - bw * 0.74} 298 M${160 + bw * 0.7} 216 Q${160 + bw * 0.82} 258 ${160 + bw * 0.74} 298" stroke="#d9d4e4" stroke-width="3" fill="none" stroke-linecap="round"/></g>`;
+    if (has('witchrobe')) s += `<path d="M${160 - bw - 6} 300 C ${160 - bw} 230, 120 185, 160 182 C 200 185, ${160 + bw} 230, ${160 + bw + 6} 300 Z" fill="#2b2140"/>
+      <g fill="#ff9a3c">${[[112, 252], [208, 246], [126, 284], [200, 286], [104, 274]].map(([x, y]) => star(x, y, 5.5)).join('')}</g>
+      <path d="M214 262 a10 10 0 1 0 7 15 a8 8 0 1 1 -7 -15 Z" fill="#ffd27a"/>
+      <path d="M114 188 L126 218 L145 199 L160 216 L175 199 L194 218 L206 188 Q160 204 114 188 Z" fill="#6a3fa0" stroke="#3e2266" stroke-width="2" stroke-linejoin="round"/>`;
+    if (has('vampsuit')) s += `<path d="M${160 - bw - 4} 300 C ${160 - bw} 228, 118 190, 160 186 C 202 190, ${160 + bw} 228, ${160 + bw + 4} 300 Z" fill="#1d1924"/>
+      <path d="M136 196 L160 262 L184 196 Z" fill="#f4f0e7"/><path d="M128 194 L160 268 L138 300 M192 194 L160 268 L182 300" stroke="#3a3346" stroke-width="3" fill="none"/>`;
+    if (has('vampcollar')) s += `<path d="M132 216 L94 150 L38 80 L56 200 Z M188 216 L226 150 L282 80 L264 200 Z" fill="#141018" stroke="#3a3346" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M126 208 L92 156 L48 96 L62 190 Z M194 208 L228 156 L272 96 L258 190 Z" fill="#b3122e"/>
+      <path d="M58 112 L66 182 M262 112 L254 182" stroke="#d8334c" stroke-width="2" opacity=".6"/>`;
     if (bowie) s += `<path d="M112 178 Q160 236 208 178 Q196 214 160 222 Q124 214 112 178 Z" fill="${p.belly}" filter="${fluff}"/>`;
+    if (has('medallion')) s += `<path d="M126 198 Q160 238 194 198" stroke="#d4a93a" stroke-width="3" fill="none"/>
+      <circle cx="160" cy="232" r="11" fill="#d4a93a" stroke="#8a6414" stroke-width="2"/><circle cx="160" cy="232" r="6" fill="#c4182f"/><circle cx="158" cy="230" r="1.8" fill="#fff" opacity=".7"/>`;
     if (has('chestbox')) s += `<g class="chestbox"><rect x="138" y="232" width="44" height="32" rx="4" fill="#3a3a46" stroke="#9a9eae" stroke-width="2.5"/>
       <rect x="144" y="238" width="7" height="6" fill="#ff3b3b" class="chest-light"/><rect x="155" y="238" width="7" height="6" fill="#4fb3ff" class="chest-light l2"/>
       <rect x="166" y="238" width="7" height="6" fill="#4cd96b" class="chest-light l3"/>
@@ -152,15 +181,51 @@
       <ellipse cx="266" cy="236" rx="22" ry="26" fill="#d4a93a"/><ellipse cx="266" cy="236" rx="16" ry="20" fill="#bfe3ee"/>
       <path d="M256 228 L270 220" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>`;
 
+    if (has('candypail')) s += `<g class="prop candypail"><path d="M28 254 Q56 206 84 254" fill="none" stroke="#2a2a2a" stroke-width="3.5"/>
+      <path d="M66 248 L72 224" stroke="#f4f1ea" stroke-width="3.5" stroke-linecap="round"/>${swirl(73, 219, 9, '#ff5a8a', '#fff')}
+      ${wrapped(44, 246, '#7b3fd4', -20)}${wrapped(58, 243, '#3fb36b', 14)}${corn(52, 240, 0.9)}
+      <ellipse cx="56" cy="268" rx="30" ry="24" fill="url(#pump-ID)" stroke="#a8501a" stroke-width="2.5"/>
+      <path d="M41 248 Q33 268 41 290 M71 248 Q79 268 71 290" stroke="#c4621a" stroke-width="2.5" fill="none"/>
+      <ellipse cx="56" cy="249" rx="21" ry="4.5" fill="#5a2a0a"/>
+      <g class="jack-glow" filter="url(#glow-ID)"><path d="M39 268 L50 268 L44.5 259 Z M62 268 L73 268 L67.5 259 Z" fill="#ffd34a"/>
+        <path d="M38 275 Q56 292 74 275 L70 277 L66 281 L61 278 L56 283 L51 278 L46 281 L42 277 Z" fill="#ffd34a"/></g></g>`;
+    if (has('candysack')) s += `<g class="prop candysack">${wrapped(40, 222, '#e0592a', -24)}${corn(56, 216, 1.1)}${wrapped(72, 220, '#7b3fd4', 18)}
+      <path d="M62 222 L66 200" stroke="#f4f1ea" stroke-width="3.5" stroke-linecap="round"/>${swirl(67, 195, 9, '#3fb36b', '#fff')}
+      <path d="M22 291 C 12 262, 18 234, 30 224 Q 40 230 50 224 Q 60 230 70 224 Q 80 230 86 226 C 98 240, 98 268, 90 291 Z" fill="#eef0f8" stroke="#8f98b4" stroke-width="2"/>
+      <path d="M32 232 Q27 262 31 290 M46 230 Q44 262 46 291 M60 230 Q60 262 60 291 M74 230 Q76 262 74 291" stroke="#bccaea" stroke-width="2" fill="none"/>
+      <text x="57" y="270" text-anchor="middle" font-size="17" font-weight="900" fill="#e0592a" font-family="Marker Felt, Chalkboard SE, Arial Rounded MT Bold, Arial" transform="rotate(-7 57 270)">MINE</text></g>`;
+    if (has('wrappers')) s += `${wrapped(102, 293, '#e0592a', 10, 0.55)}${wrapped(232, 294, '#7b3fd4', -14, 0.55)}${wrapped(248, 292, '#3fb36b', 30, 0.45)}`;
+    if (has('broom')) s += `<g class="prop broom"><path d="M54 262 L30 148" stroke="#7a5230" stroke-width="7" stroke-linecap="round"/>
+      <path d="M30 148 l-4 -6" stroke="#5a3a20" stroke-width="5" stroke-linecap="round"/>
+      <path d="M42 262 C 32 276, 26 286, 22 292 L 88 292 C 82 284, 74 274, 66 262 Z" fill="#d9a548" stroke="#9a6e22" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M32 290 L46 266 M44 291 L51 265 M55 291 L56 264 M66 291 L61 265 M78 291 L66 267" stroke="#a87a2c" stroke-width="1.6"/>
+      <path d="M41 262 Q54 268 67 262 L66 255 Q54 261 42 255 Z" fill="#7b3fd4" stroke="#4a2280" stroke-width="1.5"/></g>`;
+    if (has('cauldron')) s += `<g class="prop cauldron"><path d="M250 286 l-7 7 M290 286 l7 7" stroke="#1a1622" stroke-width="5" stroke-linecap="round"/>
+      <path d="M232 250 C 228 280, 248 292, 270 292 C 292 292, 312 280, 308 250 Z" fill="#26212e" stroke="#0f0b16" stroke-width="2"/>
+      <path d="M241 258 C 239 272, 248 282, 258 286" stroke="#4a4258" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="270" cy="250" rx="40" ry="9" fill="#3a3446" stroke="#0f0b16" stroke-width="2"/>
+      <ellipse class="brew" cx="270" cy="250" rx="33" ry="6" fill="#7dff5a" filter="url(#glow-ID)"/>
+      <ellipse cx="262" cy="249" rx="12" ry="2.4" fill="#e2ffd0" opacity=".7"/>
+      <g fill="#b4ff8a">${[[256, 0, 4], [274, 0.7, 3], [286, 1.2, 4.5], [264, 1.55, 3]].map(([x, d, r]) => `<circle class="brewbubble" cx="${x}" cy="246" r="${r}" style="animation-delay:${d}s;transform-origin:${x}px 246px"/>`).join('')}</g>
+      <g class="steam" fill="none" stroke="#9dff6a" stroke-width="3" stroke-linecap="round" opacity=".45"><path d="M258 238 q-8 -12 0 -22 q8 -10 0 -22"/><path d="M284 234 q8 -12 0 -22 q-8 -10 0 -20"/></g></g>`;
+    if (has('goblet')) s += `<g class="prop goblet"><ellipse cx="268" cy="290" rx="17" ry="4.5" fill="#c9cdd6" stroke="#6a6f7c" stroke-width="2"/>
+      <rect x="265" y="262" width="6" height="27" fill="#c9cdd6" stroke="#6a6f7c" stroke-width="2"/><circle cx="268" cy="270" r="4.5" fill="#c9cdd6" stroke="#6a6f7c" stroke-width="2"/>
+      <path d="M246 228 Q 246 262 268 264 Q 290 262 290 228 Z" fill="#c9cdd6" stroke="#6a6f7c" stroke-width="2"/>
+      <ellipse cx="268" cy="229" rx="21" ry="5" fill="#c4182f" stroke="#6a6f7c" stroke-width="2"/>
+      <path d="M252 236 Q 252 252 262 258" stroke="#fff" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/>
+      <circle cx="286" cy="224" r="7.5" fill="#e5341e" stroke="#9a1d10" stroke-width="1.5"/><circle cx="283.5" cy="221.5" r="2" fill="#fff" opacity=".55"/>
+      <path d="M281 217.5 l5 3 l5 -3 l-2 4 l4 1.5 l-7 0.5 l-7 -0.5 l4 -1.5 Z" fill="#4c9a32"/></g>`;
+    if (has('bats')) s += bat(44, 112, 1.15, 0) + bat(76, 50, 0.8, 0.9);
+
     // Front legs: the left one rests, the right one (.arm) does the slapping.
     const leg = (x, fill) => `<path d="M${x - 11} 216 C ${x - 14} 250, ${x - 15} 276, ${x - 14} 290 L ${x + 14} 290 C ${x + 15} 270, ${x + 13} 240, ${x + 11} 216 Z"
       fill="${fill}" stroke="${p.dark}" stroke-opacity=".18" stroke-width="2" filter="${fluff}"/>`;
     const paw = (x, fill) => `<ellipse class="paw" cx="${x}" cy="292" rx="18" ry="11" fill="${fill}" stroke="${p.dark}" stroke-opacity=".3" stroke-width="1.5"/>
       <path d="M${x - 6} 286 L${x - 6} 296 M${x + 6} 286 L${x + 6} 296" stroke="${p.dark}" stroke-opacity=".35" stroke-width="1.5"/>`;
-    const lx = 160 - bw * 0.36, rx = 160 + bw * 0.36, legFur = L.metal || p.belly, pawFur = L.metal || (bowie ? p.belly : p.light);
+    const lx = 160 - bw * 0.36, rx = 160 + bw * 0.36, legFur = L.legs || L.metal || p.belly, pawFur = L.metal || (bowie ? p.belly : p.light);
     // Crossed arms ("are you serious?"): two forearms folded over the chest.
     const fore = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${p.dark}" stroke-opacity=".35" stroke-width="31" stroke-linecap="round"/>
-      <path d="M${x1} ${y1} L${x2} ${y2}" stroke="${L.metal || (bowie ? legFur : p.light)}" stroke-width="27" stroke-linecap="round" filter="${fluff}"/>`;
+      <path d="M${x1} ${y1} L${x2} ${y2}" stroke="${L.legs || L.metal || (bowie ? legFur : p.light)}" stroke-width="27" stroke-linecap="round" filter="${fluff}"/>`;
     s += `<g class="arms-crossed">${fore(lx - 8, 214, rx + 6, 252)}
       <ellipse cx="${rx + 12}" cy="252" rx="15" ry="11" fill="${pawFur}" stroke="${p.dark}" stroke-opacity=".3" stroke-width="1.5"/>
       ${fore(rx + 8, 210, lx - 4, 246)}
@@ -168,7 +233,8 @@
     s += `<g class="leg-rest">${leg(lx, legFur)}${paw(lx, pawFur)}</g>
     <g class="arm" style="transform-origin:${rx}px 222px">${leg(rx, legFur)}${paw(rx, pawFur)}
       ${has('churu') ? `<g class="churu"><rect x="${rx - 6}" y="236" width="12" height="48" rx="3" fill="#f2f2f2" stroke="#d0473c" stroke-width="2"/>
-        <rect x="${rx - 6}" y="250" width="12" height="14" fill="#d0473c"/></g>` : ''}</g>`;
+        <rect x="${rx - 6}" y="250" width="12" height="14" fill="#d0473c"/></g>` : ''}
+      ${has('lolly') ? `<g class="churu"><path d="M${rx} 294 L${rx} 322" stroke="#f4f1ea" stroke-width="4.5" stroke-linecap="round"/>${swirl(rx, 336, 15, '#ff8a2a', '#7b3fd4')}</g>` : ''}</g>`;
 
     // Head.
     const hs = L.head, earFur = L.metal || p.fur, earIn = L.metal ? '#b3842a' : p.inner;
@@ -191,6 +257,13 @@
       ${has('goldcap') ? `<path d="M94 116 C 96 80, 128 72, 160 72 C 192 72, 224 80, 226 116 Q160 96 94 116 Z" fill="url(#gold-ID)" stroke="#8a6414" stroke-width="2"/>
         <path d="M100 108 Q160 90 220 108" stroke="#8a6414" stroke-width="2" fill="none"/>
         <g fill="#8a6414">${[112, 136, 160, 184, 208].map((x, i) => `<circle cx="${x}" cy="${[103, 97, 95, 97, 103][i]}" r="2"/>`).join('')}</g>` : ''}
+      ${has('stemcap') ? `<path d="M92 118 C 92 80, 126 68, 160 68 C 194 68, 228 80, 228 118 Q 196 100 160 101 Q 124 100 92 118 Z" fill="url(#pump-ID)" stroke="#a8501a" stroke-width="2.5"/>
+        <path d="M128 73 Q 116 90 115 109 M192 73 Q 204 90 205 109 M160 69 L160 100" stroke="#c4621a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M152 71 C 150 58, 154 48, 164 40 L 172 46 C 164 54, 164 62, 166 71 Z" fill="#6b7a2e" stroke="#3f4a18" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M168 62 C 180 46, 202 46, 210 56 C 198 68, 180 70, 168 62 Z" fill="#5aa53c" stroke="#2f6a24" stroke-width="2"/><path d="M171 61 Q 190 55 206 56" stroke="#2f6a24" stroke-width="1.5" fill="none"/>
+        <path d="M150 64 c -12 -2 -18 -12 -10 -18 c 7 -4 12 4 5 8" stroke="#5aa53c" stroke-width="2.5" fill="none" stroke-linecap="round"/>` : ''}
+      ${has('widowpeak') ? `<path d="M88 124 C 88 86, 120 70, 160 70 C 200 70, 232 86, 232 124 C 218 106, 196 98, 178 102 L160 126 L142 102 C 124 98, 102 106, 88 124 Z" fill="#2a1f19"/>
+        <path d="M104 100 Q128 80 152 82 M168 82 Q192 80 214 98" stroke="#5c4a3e" stroke-width="3" fill="none" stroke-linecap="round"/>` : ''}
       ${has('buns') ? `<path d="M86 122 C 90 82, 128 72, 160 72 C 192 72, 230 82, 234 122 Q 200 98 160 100 Q 120 98 86 122 Z" fill="#4a2c1a"/>
         <path d="M160 74 L160 98" stroke="#2e1a0e" stroke-width="2.5"/>${bun(80, 128, 26)}${bun(240, 128, 26)}` : ''}
       <g class="brows"><path d="M114 104 L146 114" stroke="#2a2a2a" stroke-width="5" stroke-linecap="round"/>
@@ -205,6 +278,19 @@
       <g class="mouth mouth-chew"><path d="M150 168 Q160 176 170 168" stroke="#2a2a2a" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>
       <g stroke="${bowie ? '#fff' : '#d9dde3'}" stroke-width="1.6" stroke-linecap="round" opacity=".85">
         <path d="M128 160 L84 152 M128 165 L82 166 M130 170 L88 180"/><path d="M192 160 L236 152 M192 165 L238 166 M190 170 L232 180"/></g>
+      ${has('fangs') ? `<path d="M151.5 167.5 L154 176 L156.5 168.5 Z M163.5 168.5 L166 176 L168.5 167.5 Z" fill="#fff" stroke="#b9b4c4" stroke-width=".8" stroke-linejoin="round"/>` : ''}
+      ${has('ghosthood') ? `<path fill-rule="evenodd" fill="url(#sheet-ID)" stroke="#c9c3d6" stroke-width="2.5" stroke-linejoin="round" d="M74 214 C 70 170, 74 122, 94 90 C 92 66, 94 48, 100 38 Q 106 32 114 40 C 124 54, 134 64, 142 68 Q 160 63 178 68 C 186 64, 196 54, 206 40 Q 214 32 220 38 C 226 48, 228 66, 226 90 C 246 122, 250 170, 246 214 Q 236 224 226 214 Q 216 224 206 214 Q 196 224 186 214 Q 176 224 166 214 Q 156 224 146 214 Q 136 224 126 214 Q 116 224 106 214 Q 96 224 86 214 Q 80 220 74 214 Z
+        M111 129 a21 19 0 1 0 42 0 a21 19 0 1 0 -42 0 Z M167 129 a21 19 0 1 0 42 0 a21 19 0 1 0 -42 0 Z M139 167 a21 17 0 1 0 42 0 a21 17 0 1 0 -42 0 Z"/>
+        <path d="M94 198 Q 88 160 98 128 M226 198 Q 232 160 222 128" stroke="#dcd7e6" stroke-width="3" fill="none" stroke-linecap="round"/>` : ''}
+      ${has('witchhat') ? `<g class="hat witchhat"><g class="spider"><path d="M226 94 L226 132" stroke="#e2e4ea" stroke-width="1.2"/>
+          <path d="M221 133 l-7 -5 M221 137 l-8 0 M221 140 l-7 5 M231 133 l7 -5 M231 137 l8 0 M231 140 l7 5" stroke="#1a1622" stroke-width="1.8" stroke-linecap="round"/>
+          <ellipse cx="226" cy="138" rx="5.5" ry="6.5" fill="#1a1622"/><circle cx="226" cy="130.5" r="3.8" fill="#1a1622"/>
+          <circle cx="224.4" cy="130" r="1.1" fill="#fff"/><circle cx="227.6" cy="130" r="1.1" fill="#fff"/></g>
+        <path d="M70 98 Q160 62 250 98 Q160 120 70 98 Z" fill="#221b30" stroke="#0f0b16" stroke-width="2"/>
+        <path d="M114 94 C 122 66, 130 44, 140 26 C 148 12, 160 2, 176 0 C 194 -2, 208 8, 218 24 C 204 16, 190 16, 184 24 C 180 42, 186 68, 206 94 Q 160 104 114 94 Z" fill="#2d2440" stroke="#0f0b16" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M144 58 L162 54 L165 70 L147 74 Z" fill="#5a3a8a" stroke="#0f0b16" stroke-width="1.5"/><path d="M146 61 l-3 1 M147 67 l-3 1 M161 57 l3 -1 M163 64 l3 -1" stroke="#c9b4ff" stroke-width="1.4"/>
+        <path d="M117 83 Q160 94 203 83 L206 94 Q160 104 114 94 Z" fill="#ff8a2a"/>
+        <rect x="150" y="84" width="20" height="15" rx="2" fill="none" stroke="#ffd23a" stroke-width="3.5"/></g>` : ''}
       ${has('hat') ? `<g class="hat"><path d="M92 92 Q160 70 228 92 Q160 104 92 92 Z" fill="#2f2466"/>
         <path d="M118 88 Q132 40 150 18 Q166 -6 196 4 Q170 10 172 40 Q176 70 202 88 Q160 98 118 88 Z" fill="#3d2f7a"/>
         <circle cx="196" cy="4" r="6" fill="#f4d872"/>
@@ -217,6 +303,10 @@
         <circle cx="160" cy="70" r="6" fill="#c2213b"/><circle cx="136" cy="76" r="4" fill="#2a7fd1"/><circle cx="184" cy="76" r="4" fill="#2a7fd1"/>
         <circle cx="114" cy="46" r="4" fill="#f6e08a"/><circle cx="160" cy="36" r="4" fill="#f6e08a"/><circle cx="206" cy="46" r="4" fill="#f6e08a"/></g>` : ''}
     </g>`;
+    if (has('leafcollar')) s += `<g class="leafcollar">${[[124, 192, 128], [142, 200, 104], [178, 200, 76], [196, 192, 52]].map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})">
+        <path d="M0 0 C 6 -7, 16 -7, 24 0 C 16 7, 6 7, 0 0 Z" fill="#5aa53c" stroke="#2f6a24" stroke-width="1.8"/><path d="M2 0 L20 0" stroke="#2f6a24" stroke-width="1.3"/></g>`).join('')}
+      <path d="M116 188 Q160 206 204 188" stroke="#4c8f33" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M160 198 c 8 4 12 12 6 16 c -5 3 -9 -3 -4 -6" stroke="#5aa53c" stroke-width="2.5" fill="none" stroke-linecap="round"/></g>`;
     if (has('bell')) s += `<path d="M118 190 Q160 206 202 190" stroke="#3a8de0" stroke-width="7" fill="none" stroke-linecap="round"/>
       <circle cx="160" cy="204" r="9" fill="#f2c94c" stroke="#b58a1c" stroke-width="2"/><path d="M155 206 L165 206" stroke="#7a5a10" stroke-width="2"/>`;
 
@@ -225,7 +315,7 @@
       const fx = 160 + bw * 0.36, legFur2 = L.metal || (bowie ? p.belly : p.light);
       s += `<g class="facepaw-arm" style="transform-origin:${fx}px 300px">
         <path d="M${fx + 2} 236 C ${fx + 16} 200, 194 162, 172 134" stroke="${p.dark}" stroke-opacity=".35" stroke-width="31" stroke-linecap="round" fill="none"/>
-        <path d="M${fx + 2} 236 C ${fx + 16} 200, 194 162, 172 134" stroke="${legFur2}" stroke-width="27" stroke-linecap="round" fill="none" filter="${fluff}"/>
+        <path d="M${fx + 2} 236 C ${fx + 16} 200, 194 162, 172 134" stroke="${L.legs || legFur2}" stroke-width="27" stroke-linecap="round" fill="none" filter="${fluff}"/>
         <ellipse cx="166" cy="124" rx="22" ry="16" transform="rotate(-20 166 124)" fill="${legFur2}" stroke="${p.dark}" stroke-opacity=".3" stroke-width="1.5"/>
         <g fill="#c98f98"><circle cx="156" cy="128" r="3"/><circle cx="165" cy="131" r="3.2"/><circle cx="174" cy="128" r="3"/><ellipse cx="164" cy="120" rx="6" ry="4.5"/></g></g>`;
     }
@@ -255,6 +345,24 @@
       <path d="M${x - r * 0.7} ${y - r * 0.35} q${r * 0.3} ${r * 0.3} ${r * 0.6} -${r * 0.05} q${r * 0.3} ${r * 0.35} ${r * 0.7} 0" stroke="#fff8ea" stroke-width="${(r / 6).toFixed(1)}" fill="none" stroke-linecap="round"/></g>`;
   }
 
+  // Halloween candy and friends for the Spooky Season props.
+  const wrapped = (x, y, c, rot = 0, k = 1) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${k})"><path d="M-9 0 L-16 -6 L-16 6 Z M9 0 L16 -6 L16 6 Z" fill="${c}" stroke="#00000055" stroke-width="1"/>
+    <ellipse rx="10" ry="6.5" fill="${c}" stroke="#00000055" stroke-width="1"/><path d="M-5 -3 Q0 -5 5 -3" stroke="#fff" stroke-width="1.6" fill="none" opacity=".6"/></g>`;
+  const corn = (x, y, k = 1) => `<g transform="translate(${x} ${y}) scale(${k})"><path d="M0 -10 L7 7 Q0 9 -7 7 Z" fill="#ffe08a" stroke="#b9861c" stroke-width="1.2"/>
+    <path d="M-2.6 -3.6 L2.6 -3.6 L5.2 2.6 L-5.2 2.6 Z" fill="#ffad4f"/><path d="M0 -10 L2.6 -3.6 L-2.6 -3.6 Z" fill="#fffaf0"/></g>`;
+  function swirl(x, y, r, c, c2) {
+    let d = `M${x} ${y}`;
+    for (let a = 0; a <= Math.PI * 5; a += 0.3) { const rr = r * 0.85 * a / (Math.PI * 5); d += ` L${(x + rr * Math.cos(a)).toFixed(1)} ${(y + rr * Math.sin(a)).toFixed(1)}`; }
+    return `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke="#00000044" stroke-width="1.5"/><path d="${d}" fill="none" stroke="${c2}" stroke-width="${(r / 5).toFixed(1)}" stroke-linecap="round"/>`;
+  }
+  // A little bat that bobs about while its wings flap (cats.css). Moonlit rim so it shows on a dark stage.
+  const bat = (x, y, k, delay) => `<g class="bat" style="animation-delay:${delay}s"><g transform="translate(${x} ${y}) scale(${k})">
+      <path class="wing" style="animation-delay:${delay}s" d="M-4 0 C -10 -10, -20 -12, -30 -8 C -26 -4, -26 0, -28 4 C -22 2, -18 4, -17 8 C -12 4, -8 5, -5 8 Z M4 0 C 10 -10, 20 -12, 30 -8 C 26 -4, 26 0, 28 4 C 22 2, 18 4, 17 8 C 12 4, 8 5, 5 8 Z" fill="#3a3048" stroke="#a594cc" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M-5 -4 L-6 -12 L-1 -6 Z M5 -4 L6 -12 L1 -6 Z" fill="#3a3048" stroke="#a594cc" stroke-width="1.2" stroke-linejoin="round"/>
+      <ellipse cx="0" cy="2" rx="6.5" ry="8.5" fill="#3a3048" stroke="#a594cc" stroke-width="1.4"/>
+      <circle cx="-2.4" cy="-1" r="1.6" fill="#ffd23a"/><circle cx="2.4" cy="-1" r="1.6" fill="#ffd23a"/>
+      <path d="M-1.8 4 l.8 2.2 l.8 -2.2 M1 4 l.8 2.2 l.8 -2.2" fill="#fff"/></g></g>`;
+
   function star(x, y, r) {
     let d = '';
     for (let i = 0; i < 10; i++) {
@@ -266,8 +374,13 @@
 
   // Which drawing to use for a persona right now: with the Space Saga pieces on, everyone is in costume.
   const SPACE = { bowie: 'bowieDark', kitten: 'threepio', lazy: 'leia', wizard: 'yoda' };
-  const NAMES = { bowieDark: 'Dark Lord Bowie', threepio: 'C-3PO Gus', leia: 'Princess Leia Gus', yoda: 'Master Yoda Gus' };
-  const artFor = look => (window.Core && Core.S.pieces === 'space' && SPACE[look]) || look;
+  // With the Spooky Season pieces on, everyone goes trick-or-treating.
+  const SPOOKY = { bowie: 'bowiecula', kitten: 'pumpkin', lazy: 'ghost', wizard: 'witch' };
+  const NAMES = { bowieDark: 'Dark Lord Bowie', threepio: 'C-3PO Gus', leia: 'Princess Leia Gus', yoda: 'Master Yoda Gus',
+                  bowiecula: 'Count Bowiecula', pumpkin: 'Pumpkin Gus', ghost: 'Ghost Gus', witch: 'Witch Gus' };
+  // Costume sets: piece set id -> { persona: costume look }. With that set's pieces on, everyone dresses up.
+  const COSTUMES = { space: SPACE, spooky: SPOOKY };
+  const artFor = look => (window.Core && COSTUMES[Core.S.pieces] && COSTUMES[Core.S.pieces][look]) || look;
   const nameFor = (look, name) => NAMES[artFor(look)] || name;
-  window.Cats = { svg, artFor, nameFor, SPACE, NAMES };
+  window.Cats = { svg, artFor, nameFor, SPACE, SPOOKY, NAMES, COSTUMES };
 })();

@@ -30,7 +30,9 @@
     return { kind: 'line', id, fen, setup: m[0], solution: m.slice(1), rating, themes }; };
 
   // Choose n unseen puzzles near the target rating (optionally from one theme).
-  function choosePuzzles(n, { theme = null, target = Progress.data.puzzleRating, exclude = [] } = {}) {
+  // While Jim solves fewer than about half on the first try, aim a little below his rating: confidence first.
+  const easeIn = () => { const d = Progress.data, n = d.solved + d.failed; return n >= 10 && d.solved / n < 0.5 ? 70 : 0; };
+  function choosePuzzles(n, { theme = null, target = Progress.data.puzzleRating - easeIn(), exclude = [] } = {}) {
     const idx = theme ? DATA.themes[theme] : DATA.puzzles.map((_, i) => i);
     const seen = Progress.data.seen, out = [];
     for (let span = 120; out.length < n && span < 2000; span *= 2) {
@@ -179,7 +181,10 @@
     if (hit) val = hit.cp;
     else if (c.in_checkmate()) val = MATE;
     else if (c.in_draw()) val = 0;
-    else { const after = await engine.analyse(c.fen(), { depth: 12, multipv: 1, movetime: 2000 }); val = after.length ? -after[0].cp : 0; }
+    else {   // score the move from the same position at the same depth (never compare before- and after-move evals)
+      const mine = await engine.analyse(before, { depth: 14, multipv: 1, movetime: 3000, searchmoves: [u] });
+      val = mine.length ? mine[0].cp : 0;
+    }
     p.bestMove = best.move;
     const tol = p.tol || (best.cp >= 700 ? 200 : 120);          // engine units: see engine.js
     return val >= best.cp - tol || (best.cp >= MATE - 50 && val >= MATE - 50);
@@ -236,6 +241,7 @@
     btns.forEach(b => { const el = document.createElement('button'); el.textContent = b.label; if (b.primary) el.className = 'primary'; el.onclick = b.go; row.appendChild(el); });
     box.classList.remove('hidden');
     if (stars) for (let i = 0; i < stars; i++) sfx.star(i);
+    if (stars === 3) setTimeout(() => Core.confetti(box.querySelector('.confetti')), 700);
   }
 
   // ---------- Academy lesson ----------
